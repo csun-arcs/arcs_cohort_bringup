@@ -62,7 +62,9 @@ def generate_launch_description():
     declare_robot_name_cmd = DeclareLaunchArgument(
         'robot_name',
         default_value='',
-        description='Name of the robot'
+        description=(
+            'Name of the robot (specifying this will add the '
+            'robot name prefix to joints, links, etc. in the robot model).')
     )
     declare_namespace_cmd = DeclareLaunchArgument(
         "namespace",
