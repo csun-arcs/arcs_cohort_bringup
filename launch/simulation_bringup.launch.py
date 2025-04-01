@@ -114,6 +114,11 @@ def generate_launch_description():
         default_value="false",
         description="If true, include the lidar in the robot description",
     )
+    declare_use_ros2_control_cmd = DeclareLaunchArgument(
+        "use_ros2_control",
+        default_value="false",
+        description="Use ROS2 Control for the robot",
+    )
 
     # Launch configurations
     world = LaunchConfiguration("world")
@@ -131,6 +136,7 @@ def generate_launch_description():
     rviz_config_template = LaunchConfiguration("rviz_config_template")
     rviz_config = LaunchConfiguration("rviz_config")
     use_lidar = LaunchConfiguration("use_lidar")
+    use_ros2_control = LaunchConfiguration("use_ros2_control")
 
     # Compute the robot prefix only if a robot name is provided
     # This expression will evaluate to, for example, "cohort_" if
@@ -157,6 +163,8 @@ def generate_launch_description():
             camera_resolution,
             " use_lidar:=",
             use_lidar,
+            " use_ros2_control:=",
+            use_ros2_control,
         ]
     )
 
@@ -282,6 +290,7 @@ def generate_launch_description():
             declare_rviz_config_template_cmd,
             declare_rviz_config_cmd,
             declare_use_lidar_cmd,
+            declare_use_ros2_control_cmd,
             # Nodes
             push_namespace,
             rsp_node,
