@@ -27,7 +27,9 @@ def generate_launch_description():
 
     # Paths to default files
     default_world_path = os.path.join(
-        get_package_share_directory(pkg_gazebo_sim), "worlds", "empty.world"
+        get_package_share_directory(pkg_gazebo_sim),
+        "worlds",
+        "test_obstacles_world_1.world",
     )
     default_model_path = "description/robot.urdf.xacro"
     default_rviz_config_template_file = os.path.join(
