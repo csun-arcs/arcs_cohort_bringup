@@ -27,7 +27,9 @@ def generate_launch_description():
 
     # Paths to default files
     default_world_path = os.path.join(
-        get_package_share_directory(pkg_gazebo_sim), "worlds", "empty.world"
+        get_package_share_directory(pkg_gazebo_sim),
+        "worlds",
+        "test_obstacles_world_1.world",
     )
     default_model_path = "description/robot.urdf.xacro"
     default_rviz_config_template_file = os.path.join(
@@ -119,6 +121,11 @@ def generate_launch_description():
         default_value="30",
         description="Set the update rate of the LiDAR sensor.",
     )
+    declare_use_ros2_control_cmd = DeclareLaunchArgument(
+        "use_ros2_control",
+        default_value="false",
+        description="Use ROS2 Control for the robot",
+    )
 
     # Launch configurations
     world = LaunchConfiguration("world")
@@ -137,6 +144,7 @@ def generate_launch_description():
     rviz_config = LaunchConfiguration("rviz_config")
     use_lidar = LaunchConfiguration("use_lidar")
     lidar_update_rate = LaunchConfiguration("lidar_update_rate")
+    use_ros2_control = LaunchConfiguration("use_ros2_control")
 
     # Compute the robot prefix only if a robot name is provided
     # This expression will evaluate to, for example, "cohort_" if
@@ -165,6 +173,8 @@ def generate_launch_description():
             use_lidar,
             " lidar_update_rate:=",
             lidar_update_rate,
+            " use_ros2_control:=",
+            use_ros2_control,
         ]
     )
 
@@ -291,6 +301,7 @@ def generate_launch_description():
             declare_rviz_config_cmd,
             declare_use_lidar_cmd,
             declare_lidar_update_rate_cmd,
+            declare_use_ros2_control_cmd,
             # Nodes
             push_namespace,
             rsp_node,
