@@ -134,7 +134,7 @@ def generate_launch_description():
     )
     declare_lidar_update_rate_cmd = DeclareLaunchArgument(
         "lidar_update_rate",
-        default_value="30",
+        default_value="10",
         description="Set the update rate of the LiDAR sensor.",
     )
     declare_use_ros2_control_cmd = DeclareLaunchArgument(
