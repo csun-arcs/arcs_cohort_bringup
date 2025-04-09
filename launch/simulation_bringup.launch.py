@@ -171,6 +171,11 @@ def generate_launch_description():
         default_value="true",
         description="Launch nav2_bringup package Nav2 bringup launcher",
     )
+    declare_use_joystick_cmd = DeclareLaunchArgument(
+        "use_joystick",
+        default_value="false",
+        description="Launch robot teleop with joystick",
+    )
 
     # Launch configurations
     world = LaunchConfiguration("world")
@@ -197,6 +202,7 @@ def generate_launch_description():
     use_ekf = LaunchConfiguration("use_ekf")
     use_slam = LaunchConfiguration("use_slam")
     use_nav2 = LaunchConfiguration("use_nav2")
+    use_joystick = LaunchConfiguration("use_joystick")
 
     # Compute the robot prefix only if a robot name is provided
     # This expression will evaluate to, for example, "cohort_" if
@@ -331,6 +337,7 @@ def generate_launch_description():
             "use_rsp": "false",  # Disable RSP in gazebo_sim
             "use_jsp": "false",  # Disable JSP in gazebo_sim
             "use_jsp_gui": "false",  # Disable JSP GUI in gazebo_sim
+            "use_joystick": use_joystick,
         }.items(),
     )
 
@@ -384,6 +391,7 @@ def generate_launch_description():
             declare_use_ekf_cmd,
             declare_use_slam_cmd,
             declare_use_nav2_cmd,
+            declare_use_joystick_cmd,
             # Nodes
             push_namespace,
             rsp_node,
