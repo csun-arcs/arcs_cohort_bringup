@@ -42,19 +42,13 @@ def generate_launch_description():
         get_package_share_directory(pkg_description), "rviz_config", "robot_model.rviz"
     )
     default_ekf_params = os.path.join(
-        get_package_share_directory(pkg_nav),
-        'config',
-        'ekf_params.yaml'
+        get_package_share_directory(pkg_nav), "config", "ekf_params.yaml"
     )
     default_slam_params = os.path.join(
-        get_package_share_directory(pkg_nav),
-        'config',
-        'slam_params.yaml'
+        get_package_share_directory(pkg_nav), "config", "slam_params.yaml"
     )
     default_nav2_params = os.path.join(
-        get_package_share_directory(pkg_nav),
-        'config',
-        'nav2_params.yaml'
+        get_package_share_directory(pkg_nav), "config", "nav2_params.yaml"
     )
 
     # Declare launch arguments
@@ -163,13 +157,19 @@ def generate_launch_description():
         description="Path to the params file to load for the nav2_bringup package Nav2 bringup launcher",
     )
     declare_use_ekf_cmd = DeclareLaunchArgument(
-        "use_ekf", default_value="true", description="Launch robot_localization package EKF node"
+        "use_ekf",
+        default_value="true",
+        description="Launch robot_localization package EKF node",
     )
     declare_use_slam_cmd = DeclareLaunchArgument(
-        "use_slam", default_value="true", description="Launch slam_toolbox package SLAM node"
+        "use_slam",
+        default_value="true",
+        description="Launch slam_toolbox package SLAM node",
     )
     declare_use_nav2_cmd = DeclareLaunchArgument(
-        "use_nav2", default_value="true", description="Launch nav2_bringup package Nav2 bringup launcher"
+        "use_nav2",
+        default_value="true",
+        description="Launch nav2_bringup package Nav2 bringup launcher",
     )
 
     # Launch configurations
@@ -345,6 +345,7 @@ def generate_launch_description():
                 )
             ]
         ),
+        condition=IfCondition(use_navigation),
         launch_arguments={
             "use_sim_time": use_sim_time,
             "ekf_params": ekf_params,
