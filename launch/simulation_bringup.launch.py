@@ -24,6 +24,7 @@ def generate_launch_description():
     pkg_bringup = "arcs_cohort_bringup"
     pkg_gazebo_sim = "arcs_cohort_gazebo_sim"
     pkg_description = "arcs_cohort_description"
+    pkg_nav = "arcs_cohort_navigation"
 
     # Paths to default files
     default_world_path = os.path.join(
@@ -39,6 +40,21 @@ def generate_launch_description():
     )
     default_rviz_config_file = os.path.join(
         get_package_share_directory(pkg_description), "rviz_config", "robot_model.rviz"
+    )
+    default_ekf_params = os.path.join(
+        get_package_share_directory(pkg_nav),
+        'config',
+        'ekf_params.yaml'
+    )
+    default_slam_params = os.path.join(
+        get_package_share_directory(pkg_nav),
+        'config',
+        'slam_params.yaml'
+    )
+    default_nav2_params = os.path.join(
+        get_package_share_directory(pkg_nav),
+        'config',
+        'nav2_params.yaml'
     )
 
     # Declare launch arguments
@@ -118,13 +134,42 @@ def generate_launch_description():
     )
     declare_lidar_update_rate_cmd = DeclareLaunchArgument(
         "lidar_update_rate",
-        default_value="30",
+        default_value="10",
         description="Set the update rate of the LiDAR sensor.",
     )
     declare_use_ros2_control_cmd = DeclareLaunchArgument(
         "use_ros2_control",
-        default_value="false",
+        default_value="true",
         description="Use ROS2 Control for the robot",
+    )
+    declare_use_navigation_cmd = DeclareLaunchArgument(
+        "use_navigation",
+        default_value="true",
+        description="Bring up navigation stack.",
+    )
+    declare_ekf_params_cmd = DeclareLaunchArgument(
+        "ekf_params",
+        default_value=default_ekf_params,
+        description="Path to the params file to load for the robot_localization package EKF node",
+    )
+    declare_slam_params_cmd = DeclareLaunchArgument(
+        "slam_params",
+        default_value=default_slam_params,
+        description="Path to the params file to load for the slam_toolbox package SLAM node",
+    )
+    declare_nav2_params_cmd = DeclareLaunchArgument(
+        "nav2_params",
+        default_value=default_nav2_params,
+        description="Path to the params file to load for the nav2_bringup package Nav2 bringup launcher",
+    )
+    declare_use_ekf_cmd = DeclareLaunchArgument(
+        "use_ekf", default_value="true", description="Launch robot_localization package EKF node"
+    )
+    declare_use_slam_cmd = DeclareLaunchArgument(
+        "use_slam", default_value="true", description="Launch slam_toolbox package SLAM node"
+    )
+    declare_use_nav2_cmd = DeclareLaunchArgument(
+        "use_nav2", default_value="true", description="Launch nav2_bringup package Nav2 bringup launcher"
     )
 
     # Launch configurations
@@ -145,6 +190,13 @@ def generate_launch_description():
     use_lidar = LaunchConfiguration("use_lidar")
     lidar_update_rate = LaunchConfiguration("lidar_update_rate")
     use_ros2_control = LaunchConfiguration("use_ros2_control")
+    use_navigation = LaunchConfiguration("use_navigation")
+    ekf_params = LaunchConfiguration("ekf_params")
+    slam_params = LaunchConfiguration("slam_params")
+    nav2_params = LaunchConfiguration("nav2_params")
+    use_ekf = LaunchConfiguration("use_ekf")
+    use_slam = LaunchConfiguration("use_slam")
+    use_nav2 = LaunchConfiguration("use_nav2")
 
     # Compute the robot prefix only if a robot name is provided
     # This expression will evaluate to, for example, "cohort_" if
@@ -260,7 +312,7 @@ def generate_launch_description():
         parameters=[{"use_sim_time": use_sim_time}],
     )
 
-    # Include the gazebo_sim.launch.py
+    # Include gazebo_sim.launch.py
     gazebo_sim_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             [
@@ -279,6 +331,28 @@ def generate_launch_description():
             "use_rsp": "false",  # Disable RSP in gazebo_sim
             "use_jsp": "false",  # Disable JSP in gazebo_sim
             "use_jsp_gui": "false",  # Disable JSP GUI in gazebo_sim
+        }.items(),
+    )
+
+    # Include navigation_bringup.launch.py
+    navigation_launch = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            [
+                os.path.join(
+                    get_package_share_directory("arcs_cohort_navigation"),
+                    "launch",
+                    "navigation_bringup.launch.py",
+                )
+            ]
+        ),
+        launch_arguments={
+            "use_sim_time": use_sim_time,
+            "ekf_params": ekf_params,
+            "slam_params": slam_params,
+            "nav2_params": nav2_params,
+            "use_ekf": use_ekf,
+            "use_slam": use_slam,
+            "use_nav2": use_nav2,
         }.items(),
     )
 
@@ -302,6 +376,13 @@ def generate_launch_description():
             declare_use_lidar_cmd,
             declare_lidar_update_rate_cmd,
             declare_use_ros2_control_cmd,
+            declare_use_navigation_cmd,
+            declare_ekf_params_cmd,
+            declare_slam_params_cmd,
+            declare_nav2_params_cmd,
+            declare_use_ekf_cmd,
+            declare_use_slam_cmd,
+            declare_use_nav2_cmd,
             # Nodes
             push_namespace,
             rsp_node,
@@ -311,5 +392,6 @@ def generate_launch_description():
             rviz_node,
             # Launchers
             gazebo_sim_launch,
+            navigation_launch,
         ]
     )
