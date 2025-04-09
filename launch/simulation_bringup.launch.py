@@ -139,7 +139,7 @@ def generate_launch_description():
     )
     declare_use_ros2_control_cmd = DeclareLaunchArgument(
         "use_ros2_control",
-        default_value="false",
+        default_value="true",
         description="Use ROS2 Control for the robot",
     )
     declare_use_navigation_cmd = DeclareLaunchArgument(
