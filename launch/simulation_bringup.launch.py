@@ -144,7 +144,7 @@ def generate_launch_description():
     )
     declare_use_navigation_cmd = DeclareLaunchArgument(
         "use_navigation",
-        default_value="false",
+        default_value="true",
         description="Bring up navigation stack.",
     )
     declare_ekf_params_cmd = DeclareLaunchArgument(
