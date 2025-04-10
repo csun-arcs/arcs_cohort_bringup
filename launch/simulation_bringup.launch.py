@@ -338,6 +338,7 @@ def generate_launch_description():
             "use_jsp": "false",  # Disable JSP in gazebo_sim
             "use_jsp_gui": "false",  # Disable JSP GUI in gazebo_sim
             "use_joystick": use_joystick,
+            "use_navigation": use_navigation,
         }.items(),
     )
 
