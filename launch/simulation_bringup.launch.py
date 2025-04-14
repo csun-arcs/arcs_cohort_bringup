@@ -24,6 +24,7 @@ def generate_launch_description():
     pkg_bringup = "arcs_cohort_bringup"
     pkg_gazebo_sim = "arcs_cohort_gazebo_sim"
     pkg_description = "arcs_cohort_description"
+    pkg_sensor_preproc = "arcs_cohort_sensor_preprocessor"
     pkg_nav = "arcs_cohort_navigation"
 
     # Paths to default files
@@ -49,6 +50,9 @@ def generate_launch_description():
     )
     default_nav2_params = os.path.join(
         get_package_share_directory(pkg_nav), "config", "nav2_params.yaml"
+    )
+    default_sensor_preprocessor_config_file = os.path.join(
+        get_package_share_directory(pkg_sensor_preproc), "config", "sensor_preprocessor.yaml"
     )
 
     # Declare launch arguments
@@ -93,10 +97,10 @@ def generate_launch_description():
         description="Namespace under which to bring up nodes, topics, etc.",
     )
     declare_use_rsp_cmd = DeclareLaunchArgument(
-        "use_rsp", default_value="true", description="Launch robot_state_publisher"
+        "use_rsp", default_value="true", description="Launch robot_state_publisher."
     )
     declare_use_jsp_cmd = DeclareLaunchArgument(
-        "use_jsp", default_value="false", description="Launch joint_state_publisher"
+        "use_jsp", default_value="false", description="Launch joint_state_publisher."
     )
     declare_use_jsp_gui_cmd = DeclareLaunchArgument(
         "use_jsp_gui",
@@ -114,7 +118,7 @@ def generate_launch_description():
     declare_rviz_config_template_cmd = DeclareLaunchArgument(
         "rviz_config_template",
         default_value=default_rviz_config_template_file,
-        description="Path to the RViz config template file",
+        description="Path to the RViz config template file.",
     )
     declare_rviz_config_cmd = DeclareLaunchArgument(
         "rviz_config",
@@ -124,17 +128,27 @@ def generate_launch_description():
     declare_use_lidar_cmd = DeclareLaunchArgument(
         "use_lidar",
         default_value="false",
-        description="If true, include the lidar in the robot description",
+        description="If true, include the lidar in the robot description.",
     )
     declare_lidar_update_rate_cmd = DeclareLaunchArgument(
         "lidar_update_rate",
         default_value="10",
         description="Set the update rate of the LiDAR sensor.",
     )
+    declare_use_sensor_preprocessor_cmd = DeclareLaunchArgument(
+        "use_sensor_preprocessor",
+        default_value="true",
+        description="If true, launch the sensor preprocessor.",
+    )
+    declare_sensor_preprocessor_config_cmd = DeclareLaunchArgument(
+        "sensor_preprocessor_config",
+        default_value=default_sensor_preprocessor_config_file,
+        description="Path to sensor preprocessor configuration file",
+    )
     declare_use_ros2_control_cmd = DeclareLaunchArgument(
         "use_ros2_control",
         default_value="true",
-        description="Use ROS2 Control for the robot",
+        description="Use ROS2 Control for the robot.",
     )
     declare_use_navigation_cmd = DeclareLaunchArgument(
         "use_navigation",
@@ -144,37 +158,37 @@ def generate_launch_description():
     declare_ekf_params_cmd = DeclareLaunchArgument(
         "ekf_params",
         default_value=default_ekf_params,
-        description="Path to the params file to load for the robot_localization package EKF node",
+        description="Path to the params file to load for the robot_localization package EKF node.",
     )
     declare_slam_params_cmd = DeclareLaunchArgument(
         "slam_params",
         default_value=default_slam_params,
-        description="Path to the params file to load for the slam_toolbox package SLAM node",
+        description="Path to the params file to load for the slam_toolbox package SLAM node.",
     )
     declare_nav2_params_cmd = DeclareLaunchArgument(
         "nav2_params",
         default_value=default_nav2_params,
-        description="Path to the params file to load for the nav2_bringup package Nav2 bringup launcher",
+        description="Path to the params file to load for the nav2_bringup package Nav2 bringup launcher.",
     )
     declare_use_ekf_cmd = DeclareLaunchArgument(
         "use_ekf",
         default_value="true",
-        description="Launch robot_localization package EKF node",
+        description="Launch robot_localization package EKF node.",
     )
     declare_use_slam_cmd = DeclareLaunchArgument(
         "use_slam",
         default_value="true",
-        description="Launch slam_toolbox package SLAM node",
+        description="Launch slam_toolbox package SLAM node.",
     )
     declare_use_nav2_cmd = DeclareLaunchArgument(
         "use_nav2",
         default_value="true",
-        description="Launch nav2_bringup package Nav2 bringup launcher",
+        description="Launch nav2_bringup package Nav2 bringup launcher.",
     )
     declare_use_joystick_cmd = DeclareLaunchArgument(
         "use_joystick",
         default_value="false",
-        description="Launch robot teleop with joystick",
+        description="Launch robot teleop with joystick.",
     )
 
     # Launch configurations
@@ -193,6 +207,8 @@ def generate_launch_description():
     rviz_config_template = LaunchConfiguration("rviz_config_template")
     rviz_config = LaunchConfiguration("rviz_config")
     use_lidar = LaunchConfiguration("use_lidar")
+    use_sensor_preprocessor = LaunchConfiguration("use_sensor_preprocessor")
+    sensor_preprocessor_config = LaunchConfiguration("sensor_preprocessor_config")
     lidar_update_rate = LaunchConfiguration("lidar_update_rate")
     use_ros2_control = LaunchConfiguration("use_ros2_control")
     use_navigation = LaunchConfiguration("use_navigation")
@@ -323,7 +339,7 @@ def generate_launch_description():
         PythonLaunchDescriptionSource(
             [
                 os.path.join(
-                    get_package_share_directory("arcs_cohort_gazebo_sim"),
+                    get_package_share_directory(pkg_gazebo_sim),
                     "launch",
                     "gazebo_sim.launch.py",
                 )
@@ -342,12 +358,29 @@ def generate_launch_description():
         }.items(),
     )
 
+    # Include sensor_preprocessor_bringup.launch.py
+    sensor_preprocessor_launch = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            [
+                os.path.join(
+                    get_package_share_directory(pkg_sensor_preproc),
+                    "launch",
+                    "sensor_preprocessor_bringup.launch.py",
+                )
+            ]
+        ),
+        condition=IfCondition(use_navigation),
+        launch_arguments={
+            "sensor_preprocessor_config": sensor_preprocessor_config,
+        }.items(),
+    )
+
     # Include navigation_bringup.launch.py
     navigation_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             [
                 os.path.join(
-                    get_package_share_directory("arcs_cohort_navigation"),
+                    get_package_share_directory(pkg_nav),
                     "launch",
                     "navigation_bringup.launch.py",
                 )
@@ -384,6 +417,8 @@ def generate_launch_description():
             declare_rviz_config_cmd,
             declare_use_lidar_cmd,
             declare_lidar_update_rate_cmd,
+            declare_use_sensor_preprocessor_cmd,
+            declare_sensor_preprocessor_config_cmd,
             declare_use_ros2_control_cmd,
             declare_use_navigation_cmd,
             declare_ekf_params_cmd,
@@ -401,6 +436,7 @@ def generate_launch_description():
             rviz_config_generator,
             rviz_node,
             # Launchers
+            sensor_preprocessor_launch,
             gazebo_sim_launch,
             navigation_launch,
         ]
