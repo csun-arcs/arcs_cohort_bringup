@@ -27,7 +27,7 @@ def generate_launch_description():
     pkg_sensor_preproc = "arcs_cohort_sensor_preprocessor"
     pkg_nav = "arcs_cohort_navigation"
 
-    # Paths to default files
+    # Defaults
     default_world_path = os.path.join(
         get_package_share_directory(pkg_gazebo_sim),
         "worlds",
@@ -54,27 +54,28 @@ def generate_launch_description():
     default_sensor_preprocessor_config_file = os.path.join(
         get_package_share_directory(pkg_sensor_preproc), "config", "sensor_preprocessor.yaml"
     )
+    default_log_level = "INFO"
 
     # Declare launch arguments
-    declare_world_cmd = DeclareLaunchArgument(
+    declare_world_arg = DeclareLaunchArgument(
         "world",
         default_value=default_world_path,
         description="Path to the world file to load",
     )
-    declare_use_sim_time_cmd = DeclareLaunchArgument(
+    declare_use_sim_time_arg = DeclareLaunchArgument(
         "use_sim_time", default_value="true", description="Use simulation time"
     )
-    declare_model_package_cmd = DeclareLaunchArgument(
+    declare_model_package_arg = DeclareLaunchArgument(
         "model_package",
         default_value=pkg_description,
         description="Package containing the robot model",
     )
-    declare_model_file_cmd = DeclareLaunchArgument(
+    declare_model_file_arg = DeclareLaunchArgument(
         "model_file",
         default_value=default_model_path,
         description="Relative path to the robot model file",
     )
-    declare_robot_name_cmd = DeclareLaunchArgument(
+    declare_robot_name_arg = DeclareLaunchArgument(
         "robot_name",
         default_value="",
         description=(
@@ -82,7 +83,7 @@ def generate_launch_description():
             "robot name prefix to joints, links, etc. in the robot model)."
         ),
     )
-    declare_camera_resolution_cmd = DeclareLaunchArgument(
+    declare_camera_resolution_arg = DeclareLaunchArgument(
         "camera_resolution",
         default_value="VGA",
         description=(
@@ -91,104 +92,109 @@ def generate_launch_description():
             '"HD720" (1280x720) or "VGA" (672x376).'
         ),
     )
-    declare_namespace_cmd = DeclareLaunchArgument(
+    declare_namespace_arg = DeclareLaunchArgument(
         "namespace",
         default_value="",
         description="Namespace under which to bring up nodes, topics, etc.",
     )
-    declare_use_rsp_cmd = DeclareLaunchArgument(
+    declare_use_rsp_arg = DeclareLaunchArgument(
         "use_rsp", default_value="true", description="Launch robot_state_publisher."
     )
-    declare_use_jsp_cmd = DeclareLaunchArgument(
+    declare_use_jsp_arg = DeclareLaunchArgument(
         "use_jsp", default_value="false", description="Launch joint_state_publisher."
     )
-    declare_use_jsp_gui_cmd = DeclareLaunchArgument(
+    declare_use_jsp_gui_arg = DeclareLaunchArgument(
         "use_jsp_gui",
         default_value="false",
         description="Launch joint_state_publisher_gui",
     )
-    declare_use_rviz_cmd = DeclareLaunchArgument(
+    declare_use_rviz_arg = DeclareLaunchArgument(
         "use_rviz", default_value="true", description="Launch RViz"
     )
-    declare_use_rviz_config_template_cmd = DeclareLaunchArgument(
+    declare_use_rviz_config_template_arg = DeclareLaunchArgument(
         "use_rviz_config_template",
         default_value="true",
         description="If true, generate the RViz config from the specified RViz config template.",
     )
-    declare_rviz_config_template_cmd = DeclareLaunchArgument(
+    declare_rviz_config_template_arg = DeclareLaunchArgument(
         "rviz_config_template",
         default_value=default_rviz_config_template_file,
         description="Path to the RViz config template file.",
     )
-    declare_rviz_config_cmd = DeclareLaunchArgument(
+    declare_rviz_config_arg = DeclareLaunchArgument(
         "rviz_config",
         default_value=default_rviz_config_file,
         description="Path to RViz configuration file",
     )
-    declare_use_lidar_cmd = DeclareLaunchArgument(
+    declare_use_lidar_arg = DeclareLaunchArgument(
         "use_lidar",
         default_value="false",
         description="If true, include the lidar in the robot description.",
     )
-    declare_lidar_update_rate_cmd = DeclareLaunchArgument(
+    declare_lidar_update_rate_arg = DeclareLaunchArgument(
         "lidar_update_rate",
         default_value="10",
         description="Set the update rate of the LiDAR sensor.",
     )
-    declare_use_sensor_preprocessor_cmd = DeclareLaunchArgument(
+    declare_use_sensor_preprocessor_arg = DeclareLaunchArgument(
         "use_sensor_preprocessor",
         default_value="true",
         description="If true, launch the sensor preprocessor.",
     )
-    declare_sensor_preprocessor_config_cmd = DeclareLaunchArgument(
+    declare_sensor_preprocessor_config_arg = DeclareLaunchArgument(
         "sensor_preprocessor_config",
         default_value=default_sensor_preprocessor_config_file,
         description="Path to sensor preprocessor configuration file",
     )
-    declare_use_ros2_control_cmd = DeclareLaunchArgument(
+    declare_use_ros2_control_arg = DeclareLaunchArgument(
         "use_ros2_control",
         default_value="true",
         description="Use ROS2 Control for the robot.",
     )
-    declare_use_navigation_cmd = DeclareLaunchArgument(
+    declare_use_navigation_arg = DeclareLaunchArgument(
         "use_navigation",
         default_value="true",
         description="Bring up navigation stack.",
     )
-    declare_ekf_params_cmd = DeclareLaunchArgument(
+    declare_ekf_params_arg = DeclareLaunchArgument(
         "ekf_params",
         default_value=default_ekf_params,
         description="Path to the params file to load for the robot_localization package EKF node.",
     )
-    declare_slam_params_cmd = DeclareLaunchArgument(
+    declare_slam_params_arg = DeclareLaunchArgument(
         "slam_params",
         default_value=default_slam_params,
         description="Path to the params file to load for the slam_toolbox package SLAM node.",
     )
-    declare_nav2_params_cmd = DeclareLaunchArgument(
+    declare_nav2_params_arg = DeclareLaunchArgument(
         "nav2_params",
         default_value=default_nav2_params,
         description="Path to the params file to load for the nav2_bringup package Nav2 bringup launcher.",
     )
-    declare_use_ekf_cmd = DeclareLaunchArgument(
+    declare_use_ekf_arg = DeclareLaunchArgument(
         "use_ekf",
         default_value="true",
         description="Launch robot_localization package EKF node.",
     )
-    declare_use_slam_cmd = DeclareLaunchArgument(
+    declare_use_slam_arg = DeclareLaunchArgument(
         "use_slam",
         default_value="true",
         description="Launch slam_toolbox package SLAM node.",
     )
-    declare_use_nav2_cmd = DeclareLaunchArgument(
+    declare_use_nav2_arg = DeclareLaunchArgument(
         "use_nav2",
         default_value="true",
         description="Launch nav2_bringup package Nav2 bringup launcher.",
     )
-    declare_use_joystick_cmd = DeclareLaunchArgument(
+    declare_use_joystick_arg = DeclareLaunchArgument(
         "use_joystick",
         default_value="false",
         description="Launch robot teleop with joystick.",
+    )
+    declare_log_level_arg = DeclareLaunchArgument(
+        "log_level",
+        default_value=default_log_level,
+        description="Set the log level for nodes."
     )
 
     # Launch configurations
@@ -219,6 +225,7 @@ def generate_launch_description():
     use_slam = LaunchConfiguration("use_slam")
     use_nav2 = LaunchConfiguration("use_nav2")
     use_joystick = LaunchConfiguration("use_joystick")
+    log_level = LaunchConfiguration("log_level")
 
     # Compute the robot prefix only if a robot name is provided
     # This expression will evaluate to, for example, "cohort_" if
@@ -264,6 +271,7 @@ def generate_launch_description():
             {"robot_description": robot_description, "use_sim_time": use_sim_time}
         ],
         output="screen",
+        arguments=["--ros-args", "--log-level", log_level],
     )
 
     # Joint State Publisher node
@@ -278,6 +286,7 @@ def generate_launch_description():
         name="joint_state_publisher",
         parameters=[{"use_sim_time": use_sim_time}],
         output="screen",
+        arguments=["--ros-args", "--log-level", log_level],
     )
 
     # Joint State Publisher GUI node
@@ -288,6 +297,7 @@ def generate_launch_description():
         name="joint_state_publisher_gui",
         parameters=[{"use_sim_time": use_sim_time}],
         output="screen",
+        arguments=["--ros-args", "--log-level", log_level],
     )
 
     # Generate RViz config from template.
@@ -330,7 +340,7 @@ def generate_launch_description():
         package="rviz2",
         executable="rviz2",
         output="screen",
-        arguments=["-d", rviz_config],
+        arguments=["-d", rviz_config, "--ros-args", "--log-level", log_level],
         parameters=[{"use_sim_time": use_sim_time}],
     )
 
@@ -355,6 +365,7 @@ def generate_launch_description():
             "use_jsp_gui": "false",  # Disable JSP GUI in gazebo_sim
             "use_joystick": use_joystick,
             "use_navigation": use_navigation,
+            "log_level": log_level,
         }.items(),
     )
 
@@ -372,6 +383,7 @@ def generate_launch_description():
         condition=IfCondition(use_sensor_preprocessor),
         launch_arguments={
             "sensor_preprocessor_config": sensor_preprocessor_config,
+            "log_level": log_level,
         }.items(),
     )
 
@@ -395,39 +407,41 @@ def generate_launch_description():
             "use_ekf": use_ekf,
             "use_slam": use_slam,
             "use_nav2": use_nav2,
+            "log_level": log_level,
         }.items(),
     )
 
     return LaunchDescription(
         [
             # Declare launch arguments
-            declare_world_cmd,
-            declare_use_sim_time_cmd,
-            declare_model_package_cmd,
-            declare_model_file_cmd,
-            declare_robot_name_cmd,
-            declare_camera_resolution_cmd,
-            declare_namespace_cmd,
-            declare_use_rsp_cmd,
-            declare_use_jsp_cmd,
-            declare_use_jsp_gui_cmd,
-            declare_use_rviz_cmd,
-            declare_use_rviz_config_template_cmd,
-            declare_rviz_config_template_cmd,
-            declare_rviz_config_cmd,
-            declare_use_lidar_cmd,
-            declare_lidar_update_rate_cmd,
-            declare_use_sensor_preprocessor_cmd,
-            declare_sensor_preprocessor_config_cmd,
-            declare_use_ros2_control_cmd,
-            declare_use_navigation_cmd,
-            declare_ekf_params_cmd,
-            declare_slam_params_cmd,
-            declare_nav2_params_cmd,
-            declare_use_ekf_cmd,
-            declare_use_slam_cmd,
-            declare_use_nav2_cmd,
-            declare_use_joystick_cmd,
+            declare_world_arg,
+            declare_use_sim_time_arg,
+            declare_model_package_arg,
+            declare_model_file_arg,
+            declare_robot_name_arg,
+            declare_camera_resolution_arg,
+            declare_namespace_arg,
+            declare_use_rsp_arg,
+            declare_use_jsp_arg,
+            declare_use_jsp_gui_arg,
+            declare_use_rviz_arg,
+            declare_use_rviz_config_template_arg,
+            declare_rviz_config_template_arg,
+            declare_rviz_config_arg,
+            declare_use_lidar_arg,
+            declare_lidar_update_rate_arg,
+            declare_use_sensor_preprocessor_arg,
+            declare_sensor_preprocessor_config_arg,
+            declare_use_ros2_control_arg,
+            declare_use_navigation_arg,
+            declare_ekf_params_arg,
+            declare_slam_params_arg,
+            declare_nav2_params_arg,
+            declare_use_ekf_arg,
+            declare_use_slam_arg,
+            declare_use_nav2_arg,
+            declare_use_joystick_arg,
+            declare_log_level_arg,
             # Nodes
             push_namespace,
             rsp_node,
