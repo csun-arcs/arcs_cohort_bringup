@@ -369,7 +369,7 @@ def generate_launch_description():
                 )
             ]
         ),
-        condition=IfCondition(use_navigation),
+        condition=IfCondition(use_sensor_preprocessor),
         launch_arguments={
             "sensor_preprocessor_config": sensor_preprocessor_config,
         }.items(),
