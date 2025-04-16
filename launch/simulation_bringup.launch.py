@@ -27,7 +27,7 @@ def generate_launch_description():
     pkg_sensor_preproc = "arcs_cohort_sensor_preprocessor"
     pkg_nav = "arcs_cohort_navigation"
 
-    # Paths to default files
+    # Defaults
     default_world_path = os.path.join(
         get_package_share_directory(pkg_gazebo_sim),
         "worlds",
@@ -54,6 +54,7 @@ def generate_launch_description():
     default_sensor_preprocessor_config_file = os.path.join(
         get_package_share_directory(pkg_sensor_preproc), "config", "sensor_preprocessor.yaml"
     )
+    default_log_level = "INFO"
 
     # Declare launch arguments
     declare_world_arg = DeclareLaunchArgument(
@@ -190,6 +191,11 @@ def generate_launch_description():
         default_value="false",
         description="Launch robot teleop with joystick.",
     )
+    declare_log_level_arg = DeclareLaunchArgument(
+        "log_level",
+        default_value=default_log_level,
+        description="Set the log level for nodes."
+    )
 
     # Launch configurations
     world = LaunchConfiguration("world")
@@ -219,6 +225,7 @@ def generate_launch_description():
     use_slam = LaunchConfiguration("use_slam")
     use_nav2 = LaunchConfiguration("use_nav2")
     use_joystick = LaunchConfiguration("use_joystick")
+    log_level = LaunchConfiguration("log_level")
 
     # Compute the robot prefix only if a robot name is provided
     # This expression will evaluate to, for example, "cohort_" if
@@ -264,6 +271,7 @@ def generate_launch_description():
             {"robot_description": robot_description, "use_sim_time": use_sim_time}
         ],
         output="screen",
+        arguments=["--ros-args", "--log-level", log_level],
     )
 
     # Joint State Publisher node
@@ -278,6 +286,7 @@ def generate_launch_description():
         name="joint_state_publisher",
         parameters=[{"use_sim_time": use_sim_time}],
         output="screen",
+        arguments=["--ros-args", "--log-level", log_level],
     )
 
     # Joint State Publisher GUI node
@@ -288,6 +297,7 @@ def generate_launch_description():
         name="joint_state_publisher_gui",
         parameters=[{"use_sim_time": use_sim_time}],
         output="screen",
+        arguments=["--ros-args", "--log-level", log_level],
     )
 
     # Generate RViz config from template.
@@ -330,7 +340,7 @@ def generate_launch_description():
         package="rviz2",
         executable="rviz2",
         output="screen",
-        arguments=["-d", rviz_config],
+        arguments=["-d", rviz_config, "--ros-args", "--log-level", log_level],
         parameters=[{"use_sim_time": use_sim_time}],
     )
 
@@ -355,6 +365,7 @@ def generate_launch_description():
             "use_jsp_gui": "false",  # Disable JSP GUI in gazebo_sim
             "use_joystick": use_joystick,
             "use_navigation": use_navigation,
+            "log_level": log_level,
         }.items(),
     )
 
@@ -372,6 +383,7 @@ def generate_launch_description():
         condition=IfCondition(use_sensor_preprocessor),
         launch_arguments={
             "sensor_preprocessor_config": sensor_preprocessor_config,
+            "log_level": log_level,
         }.items(),
     )
 
@@ -395,6 +407,7 @@ def generate_launch_description():
             "use_ekf": use_ekf,
             "use_slam": use_slam,
             "use_nav2": use_nav2,
+            "log_level": log_level,
         }.items(),
     )
 
@@ -428,6 +441,7 @@ def generate_launch_description():
             declare_use_slam_arg,
             declare_use_nav2_arg,
             declare_use_joystick_arg,
+            declare_log_level_arg,
             # Nodes
             push_namespace,
             rsp_node,
