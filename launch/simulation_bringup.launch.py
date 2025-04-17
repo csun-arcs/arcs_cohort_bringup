@@ -52,7 +52,9 @@ def generate_launch_description():
         get_package_share_directory(pkg_nav), "config", "nav2_params.yaml"
     )
     default_sensor_preprocessor_config_file = os.path.join(
-        get_package_share_directory(pkg_sensor_preproc), "config", "sensor_preprocessor.yaml"
+        get_package_share_directory(pkg_sensor_preproc),
+        "config",
+        "sensor_preprocessor.yaml",
     )
     default_log_level = "INFO"
 
@@ -191,10 +193,15 @@ def generate_launch_description():
         default_value="false",
         description="Launch robot teleop with joystick.",
     )
+    declare_use_keyboard_arg = DeclareLaunchArgument(
+        "use_keyboard",
+        default_value="false",
+        description="Launch robot teleop with keyboard.",
+    )
     declare_log_level_arg = DeclareLaunchArgument(
         "log_level",
         default_value=default_log_level,
-        description="Set the log level for nodes."
+        description="Set the log level for nodes.",
     )
 
     # Launch configurations
@@ -225,6 +232,7 @@ def generate_launch_description():
     use_slam = LaunchConfiguration("use_slam")
     use_nav2 = LaunchConfiguration("use_nav2")
     use_joystick = LaunchConfiguration("use_joystick")
+    use_keyboard = LaunchConfiguration("use_keyboard")
     log_level = LaunchConfiguration("log_level")
 
     # Compute the robot prefix only if a robot name is provided
@@ -364,6 +372,7 @@ def generate_launch_description():
             "use_jsp": "false",  # Disable JSP in gazebo_sim
             "use_jsp_gui": "false",  # Disable JSP GUI in gazebo_sim
             "use_joystick": use_joystick,
+            "use_keyboard": use_keyboard,
             "use_navigation": use_navigation,
             "log_level": log_level,
         }.items(),
@@ -441,6 +450,7 @@ def generate_launch_description():
             declare_use_slam_arg,
             declare_use_nav2_arg,
             declare_use_joystick_arg,
+            declare_use_keyboard_arg,
             declare_log_level_arg,
             # Nodes
             push_namespace,
