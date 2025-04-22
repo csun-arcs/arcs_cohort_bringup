@@ -77,12 +77,13 @@ def generate_launch_description():
         default_value=default_model_path,
         description="Relative path to the robot model file",
     )
-    declare_robot_name_arg = DeclareLaunchArgument(
-        "robot_name",
+    declare_prefix_arg = DeclareLaunchArgument(
+        "prefix",
         default_value="",
         description=(
-            "Name of the robot (specifying this will add the "
-            "robot name prefix to joints, links, etc. in the robot model)."
+            "A prefix for the names of joints, links, etc. in the robot model). "
+            "E.g. 'base_link' will become 'cohort1_base_link' if prefix "
+            "is set to 'cohort1'."
         ),
     )
     declare_camera_resolution_arg = DeclareLaunchArgument(
@@ -209,7 +210,7 @@ def generate_launch_description():
     use_sim_time = LaunchConfiguration("use_sim_time")
     model_package = LaunchConfiguration("model_package")
     model_file = LaunchConfiguration("model_file")
-    robot_name = LaunchConfiguration("robot_name")
+    prefix = LaunchConfiguration("prefix")
     camera_resolution = LaunchConfiguration("camera_resolution")
     namespace = LaunchConfiguration("namespace")
     use_rsp = LaunchConfiguration("use_rsp")
@@ -235,28 +236,16 @@ def generate_launch_description():
     use_keyboard = LaunchConfiguration("use_keyboard")
     log_level = LaunchConfiguration("log_level")
 
-    # Compute the robot prefix only if a robot name is provided
-    # This expression will evaluate to, for example, "cohort_" if
-    # robot_name is "cohort", or to an empty string if robot_name is empty.
-    robot_prefix = PythonExpression(
-        ["'", robot_name, "_' if '", robot_name, "' else ''"]
-    )
-    # Compute the prefix argument only if a robot_name/robot_prefix is provided.
-    # This expression will evaluate to, for example, "prefix:=cohort_" if
-    # robot_prefix is "cohort_", or to an empty string if robot_prefix is empty.
-    robot_prefix_arg = PythonExpression(
-        ["('prefix:=' + '", robot_prefix, "') if '", robot_prefix, "' else ''"]
-    )
-
     # Robot description from Xacro, including the conditional robot name prefix.
     robot_description = Command(
         [
             "xacro ",
             PathJoinSubstitution([FindPackageShare(model_package), model_file]),
-            " ",
-            robot_prefix_arg,
-            " ",
-            "camera_resolution:=",
+            " namespace:=",
+            namespace,
+            " prefix:=",
+            prefix,
+            " camera_resolution:=",
             camera_resolution,
             " use_lidar:=",
             use_lidar,
@@ -308,6 +297,13 @@ def generate_launch_description():
         arguments=["--ros-args", "--log-level", log_level],
     )
 
+    # Build the prefix with underscore.
+    # This expression will evaluate to, for example, "cohort_" if
+    # the prefix is "cohort", or to an empty string if prefix is empty.
+    prefix_ = PythonExpression(
+        ["'", prefix, "_' if '", prefix, "' else ''"]
+    )
+
     # Generate RViz config from template.
     # The robot prefix will be substituted into the RViz config template in
     # place of the ARCS_COHORT_PREFIX variable and the namespace will be
@@ -327,7 +323,7 @@ def generate_launch_description():
         cmd=[
             [
                 "ARCS_COHORT_PREFIX='",
-                robot_prefix,
+                prefix_,
                 "' ",
                 "ARCS_COHORT_NAMESPACE='",
                 namespace_env_var,
@@ -392,6 +388,7 @@ def generate_launch_description():
         condition=IfCondition(use_sensor_preprocessor),
         launch_arguments={
             "sensor_preprocessor_config": sensor_preprocessor_config,
+            "prefix": prefix,
             "log_level": log_level,
         }.items(),
     )
@@ -427,7 +424,7 @@ def generate_launch_description():
             declare_use_sim_time_arg,
             declare_model_package_arg,
             declare_model_file_arg,
-            declare_robot_name_arg,
+            declare_prefix_arg,
             declare_camera_resolution_arg,
             declare_namespace_arg,
             declare_use_rsp_arg,
