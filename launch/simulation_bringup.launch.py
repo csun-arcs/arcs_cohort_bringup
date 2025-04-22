@@ -48,8 +48,11 @@ def generate_launch_description():
     default_slam_params = os.path.join(
         get_package_share_directory(pkg_nav), "config", "slam_params.yaml"
     )
+    default_nav2_dwb_stamped_params = os.path.join(
+        get_package_share_directory(pkg_nav), "config", "nav2_dwb_stamped_params.yaml"
+    )
     default_nav2_params = os.path.join(
-        get_package_share_directory(pkg_nav), "config", "nav2_params.yaml"
+        get_package_share_directory(pkg_nav), "config", "nav2_mppi_stamped_params.yaml"
     )
     default_sensor_preprocessor_config_file = os.path.join(
         get_package_share_directory(pkg_sensor_preproc),
@@ -169,6 +172,9 @@ def generate_launch_description():
         default_value=default_slam_params,
         description="Path to the params file to load for the slam_toolbox package SLAM node.",
     )
+    decalare_use_dwb_params_arg = DeclareLaunchArgument(
+        "use_dwb", default_value="false", description="Use DWB controller plugin"
+    )
     declare_nav2_params_arg = DeclareLaunchArgument(
         "nav2_params",
         default_value=default_nav2_params,
@@ -228,6 +234,7 @@ def generate_launch_description():
     use_navigation = LaunchConfiguration("use_navigation")
     ekf_params = LaunchConfiguration("ekf_params")
     slam_params = LaunchConfiguration("slam_params")
+    use_dwb = LaunchConfiguration("use_dwb")
     nav2_params = LaunchConfiguration("nav2_params")
     use_ekf = LaunchConfiguration("use_ekf")
     use_slam = LaunchConfiguration("use_slam")
@@ -409,7 +416,18 @@ def generate_launch_description():
             "use_sim_time": use_sim_time,
             "ekf_params": ekf_params,
             "slam_params": slam_params,
-            "nav2_params": nav2_params,
+            "use_dwb": use_dwb,
+            "nav2_params": PythonExpression(
+                [
+                    '"',
+                    default_nav2_dwb_stamped_params,
+                    '" if "',
+                    use_dwb,
+                    '" == "true" else "',
+                    nav2_params,
+                    '"',
+                ]
+            ),
             "use_ekf": use_ekf,
             "use_slam": use_slam,
             "use_nav2": use_nav2,
@@ -442,6 +460,7 @@ def generate_launch_description():
             declare_use_navigation_arg,
             declare_ekf_params_arg,
             declare_slam_params_arg,
+            decalare_use_dwb_params_arg,
             declare_nav2_params_arg,
             declare_use_ekf_arg,
             declare_use_slam_arg,
