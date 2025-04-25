@@ -33,7 +33,7 @@ def generate_launch_description():
         "worlds",
         "test_obstacles_world_1.world",
     )
-    default_model_path = "description/robot.urdf.xacro"
+    default_model_path = "description/robot.gazebo.xacro"
     default_rviz_config_template_file = os.path.join(
         get_package_share_directory(pkg_description),
         "rviz_config",
@@ -80,7 +80,7 @@ def generate_launch_description():
     )
     declare_model_package_arg = DeclareLaunchArgument(
         "model_package",
-        default_value=pkg_description,
+        default_value=pkg_gazebo_sim,
         description="Package containing the robot model",
     )
     declare_model_file_arg = DeclareLaunchArgument(
