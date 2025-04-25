@@ -59,13 +59,24 @@ def generate_launch_description():
     default_log_level = "INFO"
 
     # Declare launch arguments
+    declare_namespace_arg = DeclareLaunchArgument(
+        "namespace",
+        default_value="",
+        description="Namespace under which to bring up nodes, topics, etc.",
+    )
+    declare_prefix_arg = DeclareLaunchArgument(
+        "prefix",
+        default_value="",
+        description=(
+            "A prefix for the names of joints, links, etc. in the robot model). "
+            "E.g. 'base_link' will become 'cohort1_base_link' if prefix "
+            "is set to 'cohort1'."
+        ),
+    )
     declare_world_arg = DeclareLaunchArgument(
         "world",
         default_value=default_world_path,
         description="Path to the world file to load",
-    )
-    declare_use_sim_time_arg = DeclareLaunchArgument(
-        "use_sim_time", default_value="true", description="Use simulation time"
     )
     declare_model_package_arg = DeclareLaunchArgument(
         "model_package",
@@ -77,15 +88,6 @@ def generate_launch_description():
         default_value=default_model_path,
         description="Relative path to the robot model file",
     )
-    declare_prefix_arg = DeclareLaunchArgument(
-        "prefix",
-        default_value="",
-        description=(
-            "A prefix for the names of joints, links, etc. in the robot model). "
-            "E.g. 'base_link' will become 'cohort1_base_link' if prefix "
-            "is set to 'cohort1'."
-        ),
-    )
     declare_camera_resolution_arg = DeclareLaunchArgument(
         "camera_resolution",
         default_value="VGA",
@@ -95,10 +97,53 @@ def generate_launch_description():
             '"HD720" (1280x720) or "VGA" (672x376).'
         ),
     )
-    declare_namespace_arg = DeclareLaunchArgument(
-        "namespace",
-        default_value="",
-        description="Namespace under which to bring up nodes, topics, etc.",
+    declare_rviz_config_template_arg = DeclareLaunchArgument(
+        "rviz_config_template",
+        default_value=default_rviz_config_template_file,
+        description="Path to the RViz config template file.",
+    )
+    declare_rviz_config_arg = DeclareLaunchArgument(
+        "rviz_config",
+        default_value=default_rviz_config_file,
+        description="Path to RViz configuration file",
+    )
+    declare_lidar_update_rate_arg = DeclareLaunchArgument(
+        "lidar_update_rate",
+        default_value="10",
+        description="Set the update rate of the LiDAR sensor.",
+    )
+    declare_sensor_preprocessor_config_arg = DeclareLaunchArgument(
+        "sensor_preprocessor_config",
+        default_value=default_sensor_preprocessor_config_file,
+        description="Path to sensor preprocessor configuration file",
+    )
+    declare_ekf_params_arg = DeclareLaunchArgument(
+        "ekf_params",
+        default_value=default_ekf_params,
+        description="Path to the params file to load for the robot_localization package EKF node.",
+    )
+    declare_slam_params_arg = DeclareLaunchArgument(
+        "slam_params",
+        default_value=default_slam_params,
+        description="Path to the params file to load for the slam_toolbox package SLAM node.",
+    )
+    declare_nav2_params_arg = DeclareLaunchArgument(
+        "nav2_params",
+        default_value=default_nav2_params,
+        description="Path to the params file to load for the nav2_bringup package Nav2 bringup launcher.",
+    )
+    declare_log_level_arg = DeclareLaunchArgument(
+        "log_level",
+        default_value=default_log_level,
+        description="Set the log level for nodes.",
+    )
+    declare_use_sim_time_arg = DeclareLaunchArgument(
+        "use_sim_time", default_value="true", description="Use simulation time"
+    )
+    declare_use_lidar_arg = DeclareLaunchArgument(
+        "use_lidar",
+        default_value="false",
+        description="If true, include the lidar in the robot description.",
     )
     declare_use_rsp_arg = DeclareLaunchArgument(
         "use_rsp", default_value="true", description="Launch robot_state_publisher."
@@ -119,35 +164,10 @@ def generate_launch_description():
         default_value="true",
         description="If true, generate the RViz config from the specified RViz config template.",
     )
-    declare_rviz_config_template_arg = DeclareLaunchArgument(
-        "rviz_config_template",
-        default_value=default_rviz_config_template_file,
-        description="Path to the RViz config template file.",
-    )
-    declare_rviz_config_arg = DeclareLaunchArgument(
-        "rviz_config",
-        default_value=default_rviz_config_file,
-        description="Path to RViz configuration file",
-    )
-    declare_use_lidar_arg = DeclareLaunchArgument(
-        "use_lidar",
-        default_value="false",
-        description="If true, include the lidar in the robot description.",
-    )
-    declare_lidar_update_rate_arg = DeclareLaunchArgument(
-        "lidar_update_rate",
-        default_value="10",
-        description="Set the update rate of the LiDAR sensor.",
-    )
     declare_use_sensor_preprocessor_arg = DeclareLaunchArgument(
         "use_sensor_preprocessor",
         default_value="true",
         description="If true, launch the sensor preprocessor.",
-    )
-    declare_sensor_preprocessor_config_arg = DeclareLaunchArgument(
-        "sensor_preprocessor_config",
-        default_value=default_sensor_preprocessor_config_file,
-        description="Path to sensor preprocessor configuration file",
     )
     declare_use_ros2_control_arg = DeclareLaunchArgument(
         "use_ros2_control",
@@ -158,21 +178,6 @@ def generate_launch_description():
         "use_navigation",
         default_value="true",
         description="Bring up navigation stack.",
-    )
-    declare_ekf_params_arg = DeclareLaunchArgument(
-        "ekf_params",
-        default_value=default_ekf_params,
-        description="Path to the params file to load for the robot_localization package EKF node.",
-    )
-    declare_slam_params_arg = DeclareLaunchArgument(
-        "slam_params",
-        default_value=default_slam_params,
-        description="Path to the params file to load for the slam_toolbox package SLAM node.",
-    )
-    declare_nav2_params_arg = DeclareLaunchArgument(
-        "nav2_params",
-        default_value=default_nav2_params,
-        description="Path to the params file to load for the nav2_bringup package Nav2 bringup launcher.",
     )
     declare_use_ekf_arg = DeclareLaunchArgument(
         "use_ekf",
@@ -199,42 +204,37 @@ def generate_launch_description():
         default_value="false",
         description="Launch robot teleop with keyboard.",
     )
-    declare_log_level_arg = DeclareLaunchArgument(
-        "log_level",
-        default_value=default_log_level,
-        description="Set the log level for nodes.",
-    )
 
     # Launch configurations
     world = LaunchConfiguration("world")
-    use_sim_time = LaunchConfiguration("use_sim_time")
     model_package = LaunchConfiguration("model_package")
     model_file = LaunchConfiguration("model_file")
     prefix = LaunchConfiguration("prefix")
     camera_resolution = LaunchConfiguration("camera_resolution")
     namespace = LaunchConfiguration("namespace")
+    rviz_config_template = LaunchConfiguration("rviz_config_template")
+    rviz_config = LaunchConfiguration("rviz_config")
+    sensor_preprocessor_config = LaunchConfiguration("sensor_preprocessor_config")
+    lidar_update_rate = LaunchConfiguration("lidar_update_rate")
+    ekf_params = LaunchConfiguration("ekf_params")
+    slam_params = LaunchConfiguration("slam_params")
+    nav2_params = LaunchConfiguration("nav2_params")
+    log_level = LaunchConfiguration("log_level")
+    use_sim_time = LaunchConfiguration("use_sim_time")
+    use_lidar = LaunchConfiguration("use_lidar")
     use_rsp = LaunchConfiguration("use_rsp")
     use_jsp = LaunchConfiguration("use_jsp")
     use_jsp_gui = LaunchConfiguration("use_jsp_gui")
     use_rviz = LaunchConfiguration("use_rviz")
     use_rviz_config_template = LaunchConfiguration("use_rviz_config_template")
-    rviz_config_template = LaunchConfiguration("rviz_config_template")
-    rviz_config = LaunchConfiguration("rviz_config")
-    use_lidar = LaunchConfiguration("use_lidar")
     use_sensor_preprocessor = LaunchConfiguration("use_sensor_preprocessor")
-    sensor_preprocessor_config = LaunchConfiguration("sensor_preprocessor_config")
-    lidar_update_rate = LaunchConfiguration("lidar_update_rate")
     use_ros2_control = LaunchConfiguration("use_ros2_control")
     use_navigation = LaunchConfiguration("use_navigation")
-    ekf_params = LaunchConfiguration("ekf_params")
-    slam_params = LaunchConfiguration("slam_params")
-    nav2_params = LaunchConfiguration("nav2_params")
     use_ekf = LaunchConfiguration("use_ekf")
     use_slam = LaunchConfiguration("use_slam")
     use_nav2 = LaunchConfiguration("use_nav2")
     use_joystick = LaunchConfiguration("use_joystick")
     use_keyboard = LaunchConfiguration("use_keyboard")
-    log_level = LaunchConfiguration("log_level")
 
     # Robot description from Xacro, including the conditional robot name prefix.
     robot_description = Command(
@@ -257,7 +257,7 @@ def generate_launch_description():
     )
 
     # Use PushRosNamespace to apply the namespace to all nodes below
-    push_namespace = PushRosNamespace(namespace)
+    push_namespace = PushRosNamespace(namespace=namespace)
 
     # Robot State Publisher node
     rsp_node = Node(
@@ -269,6 +269,10 @@ def generate_launch_description():
         ],
         output="screen",
         arguments=["--ros-args", "--log-level", log_level],
+        remappings=[
+            ("/tf", "tf"),
+            ("/tf_static", "tf_static"),
+        ],
     )
 
     # Joint State Publisher node
@@ -367,6 +371,8 @@ def generate_launch_description():
             ]
         ),
         launch_arguments={
+            "namespace": "",
+            "prefix": prefix,
             "world": world,
             "use_sim_time": use_sim_time,
             "model_package": model_package,
@@ -394,8 +400,9 @@ def generate_launch_description():
         ),
         condition=IfCondition(use_sensor_preprocessor),
         launch_arguments={
-            "sensor_preprocessor_config": sensor_preprocessor_config,
+            "namespace": "",
             "prefix": prefix,
+            "sensor_preprocessor_config": sensor_preprocessor_config,
             "log_level": log_level,
         }.items(),
     )
@@ -413,6 +420,8 @@ def generate_launch_description():
         ),
         condition=IfCondition(use_navigation),
         launch_arguments={
+            "namespace": "",
+            "prefix": prefix,
             "use_sim_time": use_sim_time,
             "ekf_params": ekf_params,
             "slam_params": slam_params,
@@ -427,37 +436,38 @@ def generate_launch_description():
     return LaunchDescription(
         [
             # Declare launch arguments
+            declare_namespace_arg,
+            declare_prefix_arg,
             declare_world_arg,
-            declare_use_sim_time_arg,
             declare_model_package_arg,
             declare_model_file_arg,
-            declare_prefix_arg,
             declare_camera_resolution_arg,
-            declare_namespace_arg,
+            declare_rviz_config_template_arg,
+            declare_rviz_config_arg,
+            declare_lidar_update_rate_arg,
+            declare_sensor_preprocessor_config_arg,
+            declare_ekf_params_arg,
+            declare_slam_params_arg,
+            declare_nav2_params_arg,
+            declare_log_level_arg,
+            declare_use_sim_time_arg,
+            declare_use_lidar_arg,
             declare_use_rsp_arg,
             declare_use_jsp_arg,
             declare_use_jsp_gui_arg,
             declare_use_rviz_arg,
             declare_use_rviz_config_template_arg,
-            declare_rviz_config_template_arg,
-            declare_rviz_config_arg,
-            declare_use_lidar_arg,
-            declare_lidar_update_rate_arg,
             declare_use_sensor_preprocessor_arg,
-            declare_sensor_preprocessor_config_arg,
             declare_use_ros2_control_arg,
             declare_use_navigation_arg,
-            declare_ekf_params_arg,
-            declare_slam_params_arg,
-            declare_nav2_params_arg,
             declare_use_ekf_arg,
             declare_use_slam_arg,
             declare_use_nav2_arg,
             declare_use_joystick_arg,
             declare_use_keyboard_arg,
-            declare_log_level_arg,
-            # Nodes
+            # Namespace
             push_namespace,
+            # Nodes
             rsp_node,
             jsp_node,
             jsp_gui_node,
