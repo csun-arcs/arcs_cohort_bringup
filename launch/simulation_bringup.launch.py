@@ -247,6 +247,10 @@ def generate_launch_description():
             prefix,
             " use_lidar:=",
             use_lidar,
+            " lidar_update_rate:=",
+            lidar_update_rate,
+            " camera_resolution:=",
+            camera_resolution,
             " use_ros2_control:=",
             use_ros2_control,
         ]
