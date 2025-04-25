@@ -346,6 +346,13 @@ def generate_launch_description():
         output="screen",
         arguments=["-d", rviz_config, "--ros-args", "--log-level", log_level],
         parameters=[{"use_sim_time": use_sim_time}],
+        remappings=[
+            ("/tf", "tf"),
+            ("/tf_static", "tf_static"),
+            ('/goal_pose', 'goal_pose'),
+            ('/clicked_point', 'clicked_point'),
+            ('/initialpose', 'initialpose'),
+        ],
     )
 
     # Include gazebo_sim.launch.py
