@@ -245,12 +245,8 @@ def generate_launch_description():
             namespace,
             " prefix:=",
             prefix,
-            " camera_resolution:=",
-            camera_resolution,
             " use_lidar:=",
             use_lidar,
-            " lidar_update_rate:=",
-            lidar_update_rate,
             " use_ros2_control:=",
             use_ros2_control,
         ]
@@ -377,6 +373,9 @@ def generate_launch_description():
             "use_sim_time": use_sim_time,
             "model_package": model_package,
             "model_file": model_file,
+            "camera_resolution": camera_resolution,
+            "lidar_update_rate": lidar_update_rate,
+            "use_lidar": use_lidar,
             "use_rsp": "false",  # Disable RSP in gazebo_sim
             "use_jsp": "false",  # Disable JSP in gazebo_sim
             "use_jsp_gui": "false",  # Disable JSP GUI in gazebo_sim
