@@ -282,6 +282,7 @@ def generate_launch_description():
     use_joystick = LaunchConfiguration("use_joystick")
     use_keyboard = LaunchConfiguration("use_keyboard")
 
+    # Log info
     log_info = LogInfo(msg=['Simulation bringup launching with namespace: ', namespace, ', prefix: ', prefix])
 
     # Use PushRosNamespace to apply the namespace to all nodes below
