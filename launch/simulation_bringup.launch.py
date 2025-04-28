@@ -456,6 +456,8 @@ def generate_launch_description():
             "use_jsp": "false",  # Disable JSP in gazebo_sim
             "use_jsp_gui": "false",  # Disable JSP GUI in gazebo_sim
             "use_joystick": use_joystick,
+            "lidar_update_rate": lidar_update_rate,
+            "camera_resolution": camera_resolution,
             "use_keyboard": use_keyboard,
             "use_navigation": use_navigation,
             "log_level": log_level,
