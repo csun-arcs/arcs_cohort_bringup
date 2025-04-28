@@ -6,6 +6,8 @@ from launch.actions import (
     DeclareLaunchArgument,
     IncludeLaunchDescription,
     ExecuteProcess,
+    LogInfo,
+    GroupAction,
 )
 from launch.conditions import IfCondition
 from launch.launch_description_sources import PythonLaunchDescriptionSource
@@ -21,38 +23,46 @@ from launch_ros.substitutions import FindPackageShare
 
 def generate_launch_description():
     # Package and file paths
-    pkg_bringup = "arcs_cohort_bringup"
-    pkg_gazebo_sim = "arcs_cohort_gazebo_sim"
-    pkg_description = "arcs_cohort_description"
-    pkg_sensor_preproc = "arcs_cohort_sensor_preprocessor"
-    pkg_nav = "arcs_cohort_navigation"
+    gazebo_sim_pkg = "arcs_cohort_gazebo_sim"
+    description_pkg = "arcs_cohort_description"
+    sensor_preproc_pkg = "arcs_cohort_sensor_preprocessor"
+    nav_pkg = "arcs_cohort_navigation"
 
     # Defaults
     default_world_path = os.path.join(
-        get_package_share_directory(pkg_gazebo_sim),
+        get_package_share_directory(gazebo_sim_pkg),
         "worlds",
         "test_obstacles_world_1.world",
     )
     default_model_path = "description/robot.gazebo.xacro"
     default_rviz_config_template_file = os.path.join(
-        get_package_share_directory(pkg_description),
+        get_package_share_directory(description_pkg),
         "rviz_config",
         "robot_model.rviz.template",
     )
     default_rviz_config_file = os.path.join(
-        get_package_share_directory(pkg_description), "rviz_config", "robot_model.rviz"
+        get_package_share_directory(description_pkg), "rviz_config", "robot_model.rviz"
+    )
+    default_ekf_params_file_template = os.path.join(
+        get_package_share_directory(nav_pkg), "config", "ekf_params.yaml.template"
     )
     default_ekf_params = os.path.join(
-        get_package_share_directory(pkg_nav), "config", "ekf_params.yaml"
+        get_package_share_directory(nav_pkg), "config", "ekf_params.yaml"
+    )
+    default_slam_params_file_template = os.path.join(
+        get_package_share_directory(nav_pkg), "config", "slam_params.yaml.template"
     )
     default_slam_params = os.path.join(
-        get_package_share_directory(pkg_nav), "config", "slam_params.yaml"
+        get_package_share_directory(nav_pkg), "config", "slam_params.yaml"
+    )
+    default_nav2_params_file_template = os.path.join(
+        get_package_share_directory(nav_pkg), "config", "nav2_mppi_stamped_params.yaml.template"
     )
     default_nav2_params = os.path.join(
-        get_package_share_directory(pkg_nav), "config", "nav2_params.yaml"
+        get_package_share_directory(nav_pkg), "config", "nav2_params.yaml"
     )
     default_sensor_preprocessor_config_file = os.path.join(
-        get_package_share_directory(pkg_sensor_preproc),
+        get_package_share_directory(sensor_preproc_pkg),
         "config",
         "sensor_preprocessor.yaml",
     )
@@ -80,7 +90,7 @@ def generate_launch_description():
     )
     declare_model_package_arg = DeclareLaunchArgument(
         "model_package",
-        default_value=pkg_gazebo_sim,
+        default_value=gazebo_sim_pkg,
         description="Package containing the robot model",
     )
     declare_model_file_arg = DeclareLaunchArgument(
@@ -117,10 +127,25 @@ def generate_launch_description():
         default_value=default_sensor_preprocessor_config_file,
         description="Path to sensor preprocessor configuration file",
     )
+    declare_ekf_params_template_arg = DeclareLaunchArgument(
+        "ekf_params_template",
+        default_value=default_ekf_params_file_template,
+        description="Path to the params file template from which to generate the params file for the robot_localization package EKF node.",
+    )
     declare_ekf_params_arg = DeclareLaunchArgument(
         "ekf_params",
         default_value=default_ekf_params,
         description="Path to the params file to load for the robot_localization package EKF node.",
+    )
+    declare_slam_params_template_arg = DeclareLaunchArgument(
+        "slam_params_template",
+        default_value=default_slam_params_file_template,
+        description="Path to the params file template from which to generate the params file for the slam_toolbox package SLAM node.",
+    )
+    declare_nav2_params_template_arg = DeclareLaunchArgument(
+        "nav2_params_template",
+        default_value=default_nav2_params_file_template,
+        description="Path to the params file template from which to generate the params file for the nav2_bringup package Nav2 bringup launcher.",
     )
     declare_slam_params_arg = DeclareLaunchArgument(
         "slam_params",
@@ -194,6 +219,21 @@ def generate_launch_description():
         default_value="true",
         description="Launch nav2_bringup package Nav2 bringup launcher.",
     )
+    declare_use_ekf_params_template_arg = DeclareLaunchArgument(
+        "use_ekf_params_template",
+        default_value="true",
+        description="If true, generate the EKF params from the specified EKF params template.",
+    )
+    declare_use_slam_params_template_arg = DeclareLaunchArgument(
+        "use_slam_params_template",
+        default_value="true",
+        description="If true, generate the SLAM params from the specified SLAM params template.",
+    )
+    declare_use_nav2_params_template_arg = DeclareLaunchArgument(
+        "use_nav2_params_template",
+        default_value="true",
+        description="If true, generate the Nav2 params from the specified Nav2 params template.",
+    )
     declare_use_joystick_arg = DeclareLaunchArgument(
         "use_joystick",
         default_value="false",
@@ -216,8 +256,11 @@ def generate_launch_description():
     rviz_config = LaunchConfiguration("rviz_config")
     sensor_preprocessor_config = LaunchConfiguration("sensor_preprocessor_config")
     lidar_update_rate = LaunchConfiguration("lidar_update_rate")
+    ekf_params_template = LaunchConfiguration("ekf_params_template")
     ekf_params = LaunchConfiguration("ekf_params")
+    slam_params_template = LaunchConfiguration("slam_params_template")
     slam_params = LaunchConfiguration("slam_params")
+    nav2_params_template = LaunchConfiguration("nav2_params_template")
     nav2_params = LaunchConfiguration("nav2_params")
     log_level = LaunchConfiguration("log_level")
     use_sim_time = LaunchConfiguration("use_sim_time")
@@ -233,8 +276,68 @@ def generate_launch_description():
     use_ekf = LaunchConfiguration("use_ekf")
     use_slam = LaunchConfiguration("use_slam")
     use_nav2 = LaunchConfiguration("use_nav2")
+    use_ekf_params_template = LaunchConfiguration("use_ekf_params_template")
+    use_slam_params_template = LaunchConfiguration("use_slam_params_template")
+    use_nav2_params_template = LaunchConfiguration("use_nav2_params_template")
     use_joystick = LaunchConfiguration("use_joystick")
     use_keyboard = LaunchConfiguration("use_keyboard")
+
+    log_info = LogInfo(msg=['Simulation bringup launching with namespace: ', namespace, ', prefix: ', prefix])
+
+    # Use PushRosNamespace to apply the namespace to all nodes below
+    push_namespace = PushRosNamespace(namespace=namespace)
+
+    # Build the prefix with underscore.
+    # This expression will evaluate to, for example, "cohort_" if
+    # the prefix is "cohort", or to an empty string if prefix is empty.
+    prefix_ = PythonExpression(
+        ["'", prefix, "_' if '", prefix, "' else ''"]
+    )
+
+    # Build the namespace with trailing slash.
+    # This expression will evaluate to, for example, "cohort1/" if
+    # the namespace is "cohort1", or to an empty string if namespace is empty.
+    namespace_ = PythonExpression(
+        ["'", namespace, "/' if '", namespace, "' else ''"]
+    )
+
+    # Build the namespace with leading and trailing slashes.
+    # This expression will evaluate to, for example, "/cohort1/" if
+    # the namespace is "cohort1", or to an empty string if namespace is empty.
+    _namespace_ = PythonExpression(
+        ["'/", namespace, "/' if '", namespace, "' else ''"]
+    )
+
+    # Generate RViz config from template.
+    # The robot prefix will be substituted into the RViz config template in
+    # place of the ARCS_COHORT_PREFIX variable and the namespace will be
+    # substituted in place of ARCS_COHORT_NAMESPACE.
+    #
+    # NOTE: We should probably change this approach later.  It's a neat trick,
+    # but might not be manageable/scaleable.  Using fixed RViz configurations
+    # for different robot/world scenarios is probably a more robust approach.
+    # This type of dynamic RViz config generation could still be useful in the
+    # early stages of project development to test namespacing, prefixing, etc.
+    #
+    rviz_config_generator = ExecuteProcess(
+        condition=IfCondition(use_rviz_config_template),
+        cmd=[
+            [
+                "ARCS_COHORT_PREFIX='",
+                prefix_,
+                "' ",
+                "ARCS_COHORT_NAMESPACE='",
+                _namespace_,
+                "' ",
+                "envsubst < ",
+                rviz_config_template,
+                " > ",
+                rviz_config,
+            ]
+        ],
+        shell=True,
+        output="screen",
+    )
 
     # Robot description from Xacro, including the conditional robot name prefix.
     robot_description = Command(
@@ -256,122 +359,90 @@ def generate_launch_description():
         ]
     )
 
-    # Use PushRosNamespace to apply the namespace to all nodes below
-    push_namespace = PushRosNamespace(namespace=namespace)
-
     # Robot State Publisher node
-    rsp_node = Node(
-        condition=IfCondition(use_rsp),
-        package="robot_state_publisher",
-        executable="robot_state_publisher",
-        parameters=[
-            {"robot_description": robot_description, "use_sim_time": use_sim_time}
-        ],
-        output="screen",
-        arguments=["--ros-args", "--log-level", log_level],
-        remappings=[
-            ("/tf", "tf"),
-            ("/tf_static", "tf_static"),
-        ],
-    )
+    rsp_node = GroupAction([
+        push_namespace,
+        Node(
+            condition=IfCondition(use_rsp),
+            package="robot_state_publisher",
+            executable="robot_state_publisher",
+            parameters=[
+                {"robot_description": robot_description, "use_sim_time": use_sim_time}
+            ],
+            output="screen",
+            arguments=["--ros-args", "--log-level", log_level],
+            remappings=[
+                ("/tf", "tf"),
+                ("/tf_static", "tf_static"),
+            ],
+        )
+    ])
 
     # Joint State Publisher node
-    jsp_node = Node(
-        condition=IfCondition(
-            PythonExpression(
-                ["'", use_jsp, "' == 'true' and '", use_jsp_gui, "' != 'true'"]
-            )
+    jsp_node = GroupAction([
+        push_namespace,
+        Node(
+            condition=IfCondition(
+                PythonExpression(
+                    ["'", use_jsp, "' == 'true' and '", use_jsp_gui, "' != 'true'"]
+                )
+            ),
+            package="joint_state_publisher",
+            executable="joint_state_publisher",
+            name="joint_state_publisher",
+            parameters=[{"use_sim_time": use_sim_time}],
+            output="screen",
+            arguments=["--ros-args", "--log-level", log_level],
         ),
-        package="joint_state_publisher",
-        executable="joint_state_publisher",
-        name="joint_state_publisher",
-        parameters=[{"use_sim_time": use_sim_time}],
-        output="screen",
-        arguments=["--ros-args", "--log-level", log_level],
-    )
+    ])
 
     # Joint State Publisher GUI node
-    jsp_gui_node = Node(
-        condition=IfCondition(use_jsp_gui),
-        package="joint_state_publisher_gui",
-        executable="joint_state_publisher_gui",
-        name="joint_state_publisher_gui",
-        parameters=[{"use_sim_time": use_sim_time}],
-        output="screen",
-        arguments=["--ros-args", "--log-level", log_level],
-    )
-
-    # Build the prefix with underscore.
-    # This expression will evaluate to, for example, "cohort_" if
-    # the prefix is "cohort", or to an empty string if prefix is empty.
-    prefix_ = PythonExpression(
-        ["'", prefix, "_' if '", prefix, "' else ''"]
-    )
-
-    # Generate RViz config from template.
-    # The robot prefix will be substituted into the RViz config template in
-    # place of the ARCS_COHORT_PREFIX variable and the namespace will be
-    # substituted in place of ARCS_COHORT_NAMESPACE.
-    #
-    # NOTE: We should probably change this approach later.  It's a neat trick,
-    # but might not be manageable/scaleable.  Using fixed RViz configurations
-    # for different robot/world scenarios is probably a more robust approach.
-    # This type of dynamic RViz config generation could still be useful in the
-    # early stages of project development to test namespacing, prefixing, etc.
-    #
-    namespace_env_var = PythonExpression(
-        ["'/", namespace, "' if '", namespace, "' else ''"]
-    )
-    rviz_config_generator = ExecuteProcess(
-        condition=IfCondition(use_rviz_config_template),
-        cmd=[
-            [
-                "ARCS_COHORT_PREFIX='",
-                prefix_,
-                "' ",
-                "ARCS_COHORT_NAMESPACE='",
-                namespace_env_var,
-                "' ",
-                "envsubst < ",
-                rviz_config_template,
-                " > ",
-                rviz_config,
-            ]
-        ],
-        shell=True,
-        output="screen",
-    )
+    jsp_gui_node = GroupAction([
+        push_namespace,
+        Node(
+            condition=IfCondition(use_jsp_gui),
+            package="joint_state_publisher_gui",
+            executable="joint_state_publisher_gui",
+            name="joint_state_publisher_gui",
+            parameters=[{"use_sim_time": use_sim_time}],
+            output="screen",
+            arguments=["--ros-args", "--log-level", log_level],
+        ),
+    ])
 
     # RViz node
-    rviz_node = Node(
-        condition=IfCondition(use_rviz),
-        package="rviz2",
-        executable="rviz2",
-        output="screen",
-        arguments=["-d", rviz_config, "--ros-args", "--log-level", log_level],
-        parameters=[{"use_sim_time": use_sim_time}],
-        remappings=[
-            ("/tf", "tf"),
-            ("/tf_static", "tf_static"),
-            ('/goal_pose', 'goal_pose'),
-            ('/clicked_point', 'clicked_point'),
-            ('/initialpose', 'initialpose'),
-        ],
-    )
+    rviz_node = GroupAction([
+        push_namespace,
+        Node(
+            condition=IfCondition(use_rviz),
+            package="rviz2",
+            executable="rviz2",
+            output="screen",
+            arguments=["-d", rviz_config, "--ros-args", "--log-level", log_level],
+            parameters=[{"use_sim_time": use_sim_time}],
+            remappings=[
+                ("/tf", "tf"),
+                ("/tf_static", "tf_static"),
+                ('/goal_pose', 'goal_pose'),
+                ('/clicked_point', 'clicked_point'),
+                ('/initialpose', 'initialpose'),
+            ],
+        ),
+    ])
 
     # Include gazebo_sim.launch.py
     gazebo_sim_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             [
                 os.path.join(
-                    get_package_share_directory(pkg_gazebo_sim),
+                    get_package_share_directory(gazebo_sim_pkg),
                     "launch",
                     "gazebo_sim.launch.py",
                 )
             ]
         ),
         launch_arguments={
-            "namespace": "",
+            "namespace": namespace,
             "prefix": prefix,
             "world": world,
             "use_sim_time": use_sim_time,
@@ -395,7 +466,7 @@ def generate_launch_description():
         PythonLaunchDescriptionSource(
             [
                 os.path.join(
-                    get_package_share_directory(pkg_sensor_preproc),
+                    get_package_share_directory(sensor_preproc_pkg),
                     "launch",
                     "sensor_preprocessor_bringup.launch.py",
                 )
@@ -403,7 +474,7 @@ def generate_launch_description():
         ),
         condition=IfCondition(use_sensor_preprocessor),
         launch_arguments={
-            "namespace": "",
+            "namespace": namespace,
             "prefix": prefix,
             "sensor_preprocessor_config": sensor_preprocessor_config,
             "log_level": log_level,
@@ -413,28 +484,34 @@ def generate_launch_description():
     # Include navigation_bringup.launch.py
     navigation_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
-            [
-                os.path.join(
-                    get_package_share_directory(pkg_nav),
-                    "launch",
-                    "navigation_bringup.launch.py",
-                )
-            ]
-        ),
-        condition=IfCondition(use_navigation),
-        launch_arguments={
-            "namespace": "",
-            "prefix": prefix,
-            "use_sim_time": use_sim_time,
-            "ekf_params": ekf_params,
-            "slam_params": slam_params,
-            "nav2_params": nav2_params,
-            "use_ekf": use_ekf,
-            "use_slam": use_slam,
-            "use_nav2": use_nav2,
-            "log_level": log_level,
-        }.items(),
-    )
+                [
+                    os.path.join(
+                        get_package_share_directory(nav_pkg),
+                        "launch",
+                        "navigation_bringup.launch.py",
+                    )
+                ]
+            ),
+            condition=IfCondition(use_navigation),
+            launch_arguments={
+                "namespace": namespace,
+                "prefix": prefix,
+                "use_sim_time": use_sim_time,
+                "ekf_params_template": ekf_params_template,
+                "ekf_params": ekf_params,
+                "slam_params_template": slam_params_template,
+                "slam_params": slam_params,
+                "nav2_params_template": nav2_params_template,
+                "nav2_params": nav2_params,
+                "use_ekf": use_ekf,
+                "use_ekf_params_template": use_ekf_params_template,
+                "use_slam": use_slam,
+                "use_slam_params_template": use_slam_params_template,
+                "use_nav2": use_nav2,
+                "use_nav2_params_template": use_nav2_params_template,
+                "log_level": log_level,
+            }.items()
+        )
 
     return LaunchDescription(
         [
@@ -449,8 +526,11 @@ def generate_launch_description():
             declare_rviz_config_arg,
             declare_lidar_update_rate_arg,
             declare_sensor_preprocessor_config_arg,
+            declare_ekf_params_template_arg,
             declare_ekf_params_arg,
+            declare_slam_params_template_arg,
             declare_slam_params_arg,
+            declare_nav2_params_template_arg,
             declare_nav2_params_arg,
             declare_log_level_arg,
             declare_use_sim_time_arg,
@@ -466,15 +546,19 @@ def generate_launch_description():
             declare_use_ekf_arg,
             declare_use_slam_arg,
             declare_use_nav2_arg,
+            declare_use_ekf_params_template_arg,
+            declare_use_slam_params_template_arg,
+            declare_use_nav2_params_template_arg,
             declare_use_joystick_arg,
             declare_use_keyboard_arg,
-            # Namespace
-            push_namespace,
+            # Log
+            log_info,
+            # Param file generators
+            rviz_config_generator,
             # Nodes
             rsp_node,
             jsp_node,
             jsp_gui_node,
-            rviz_config_generator,
             rviz_node,
             # Launchers
             sensor_preprocessor_launch,
