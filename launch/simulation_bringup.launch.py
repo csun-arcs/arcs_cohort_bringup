@@ -343,7 +343,7 @@ def generate_launch_description():
         ),
     ])
 
-    # Include gazebo_sim.launch.py
+    # Include rviz.launch.py
     rviz_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             [
