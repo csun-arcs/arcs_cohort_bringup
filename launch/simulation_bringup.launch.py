@@ -23,6 +23,7 @@ from launch_ros.substitutions import FindPackageShare
 
 def generate_launch_description():
     # Package and file paths
+    rviz_pkg = "arcs_cohort_rviz"
     gazebo_sim_pkg = "arcs_cohort_gazebo_sim"
     description_pkg = "arcs_cohort_description"
     sensor_preproc_pkg = "arcs_cohort_sensor_preprocessor"
@@ -35,13 +36,8 @@ def generate_launch_description():
         "test_obstacles_world_1.world",
     )
     default_model_path = "description/robot.gazebo.xacro"
-    default_rviz_config_template_file = os.path.join(
-        get_package_share_directory(description_pkg),
-        "rviz_config",
-        "robot_model.rviz.template",
-    )
     default_rviz_config_file = os.path.join(
-        get_package_share_directory(description_pkg), "rviz_config", "robot_model.rviz"
+        get_package_share_directory(rviz_pkg), "rviz", "cohort_default.rviz"
     )
     default_ekf_params_file_template = os.path.join(
         get_package_share_directory(nav_pkg), "config", "ekf_params.yaml.template"
@@ -106,11 +102,6 @@ def generate_launch_description():
             'Options: "HD2K" (2208x1242), "HD1080" (1920x1080), '
             '"HD720" (1280x720) or "VGA" (672x376).'
         ),
-    )
-    declare_rviz_config_template_arg = DeclareLaunchArgument(
-        "rviz_config_template",
-        default_value=default_rviz_config_template_file,
-        description="Path to the RViz config template file.",
     )
     declare_rviz_config_arg = DeclareLaunchArgument(
         "rviz_config",
@@ -184,11 +175,6 @@ def generate_launch_description():
     declare_use_rviz_arg = DeclareLaunchArgument(
         "use_rviz", default_value="true", description="Launch RViz"
     )
-    declare_use_rviz_config_template_arg = DeclareLaunchArgument(
-        "use_rviz_config_template",
-        default_value="true",
-        description="If true, generate the RViz config from the specified RViz config template.",
-    )
     declare_use_sensor_preprocessor_arg = DeclareLaunchArgument(
         "use_sensor_preprocessor",
         default_value="true",
@@ -246,13 +232,12 @@ def generate_launch_description():
     )
 
     # Launch configurations
+    namespace = LaunchConfiguration("namespace")
+    prefix = LaunchConfiguration("prefix")
     world = LaunchConfiguration("world")
     model_package = LaunchConfiguration("model_package")
     model_file = LaunchConfiguration("model_file")
-    prefix = LaunchConfiguration("prefix")
     camera_resolution = LaunchConfiguration("camera_resolution")
-    namespace = LaunchConfiguration("namespace")
-    rviz_config_template = LaunchConfiguration("rviz_config_template")
     rviz_config = LaunchConfiguration("rviz_config")
     sensor_preprocessor_config = LaunchConfiguration("sensor_preprocessor_config")
     lidar_update_rate = LaunchConfiguration("lidar_update_rate")
@@ -269,7 +254,6 @@ def generate_launch_description():
     use_jsp = LaunchConfiguration("use_jsp")
     use_jsp_gui = LaunchConfiguration("use_jsp_gui")
     use_rviz = LaunchConfiguration("use_rviz")
-    use_rviz_config_template = LaunchConfiguration("use_rviz_config_template")
     use_sensor_preprocessor = LaunchConfiguration("use_sensor_preprocessor")
     use_ros2_control = LaunchConfiguration("use_ros2_control")
     use_navigation = LaunchConfiguration("use_navigation")
@@ -287,58 +271,6 @@ def generate_launch_description():
 
     # Use PushRosNamespace to apply the namespace to all nodes below
     push_namespace = PushRosNamespace(namespace=namespace)
-
-    # Build the prefix with underscore.
-    # This expression will evaluate to, for example, "cohort_" if
-    # the prefix is "cohort", or to an empty string if prefix is empty.
-    prefix_ = PythonExpression(
-        ["'", prefix, "_' if '", prefix, "' else ''"]
-    )
-
-    # Build the namespace with trailing slash.
-    # This expression will evaluate to, for example, "cohort1/" if
-    # the namespace is "cohort1", or to an empty string if namespace is empty.
-    namespace_ = PythonExpression(
-        ["'", namespace, "/' if '", namespace, "' else ''"]
-    )
-
-    # Build the namespace with leading and trailing slashes.
-    # This expression will evaluate to, for example, "/cohort1/" if
-    # the namespace is "cohort1", or to an empty string if namespace is empty.
-    _namespace_ = PythonExpression(
-        ["'/", namespace, "/' if '", namespace, "' else ''"]
-    )
-
-    # Generate RViz config from template.
-    # The robot prefix will be substituted into the RViz config template in
-    # place of the ARCS_COHORT_PREFIX variable and the namespace will be
-    # substituted in place of ARCS_COHORT_NAMESPACE.
-    #
-    # NOTE: We should probably change this approach later.  It's a neat trick,
-    # but might not be manageable/scaleable.  Using fixed RViz configurations
-    # for different robot/world scenarios is probably a more robust approach.
-    # This type of dynamic RViz config generation could still be useful in the
-    # early stages of project development to test namespacing, prefixing, etc.
-    #
-    rviz_config_generator = ExecuteProcess(
-        condition=IfCondition(use_rviz_config_template),
-        cmd=[
-            [
-                "ARCS_COHORT_PREFIX='",
-                prefix_,
-                "' ",
-                "ARCS_COHORT_NAMESPACE='",
-                _namespace_,
-                "' ",
-                "envsubst < ",
-                rviz_config_template,
-                " > ",
-                rviz_config,
-            ]
-        ],
-        shell=True,
-        output="screen",
-    )
 
     # Robot description from Xacro, including the conditional robot name prefix.
     robot_description = Command(
@@ -411,25 +343,25 @@ def generate_launch_description():
         ),
     ])
 
-    # RViz node
-    rviz_node = GroupAction([
-        push_namespace,
-        Node(
-            condition=IfCondition(use_rviz),
-            package="rviz2",
-            executable="rviz2",
-            output="screen",
-            arguments=["-d", rviz_config, "--ros-args", "--log-level", log_level],
-            parameters=[{"use_sim_time": use_sim_time}],
-            remappings=[
-                ("/tf", "tf"),
-                ("/tf_static", "tf_static"),
-                ('/goal_pose', 'goal_pose'),
-                ('/clicked_point', 'clicked_point'),
-                ('/initialpose', 'initialpose'),
-            ],
+    # Include gazebo_sim.launch.py
+    rviz_launch = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            [
+                os.path.join(
+                    get_package_share_directory(rviz_pkg),
+                    "launch",
+                    "rviz.launch.py",
+                )
+            ]
         ),
-    ])
+        condition=IfCondition(use_rviz),
+        launch_arguments={
+            "namespace": namespace,
+            "prefix": prefix,
+            "rviz_config": rviz_config,
+            "log_level": log_level,
+        }.items(),
+    )
 
     # Include gazebo_sim.launch.py
     gazebo_sim_launch = IncludeLaunchDescription(
@@ -525,7 +457,6 @@ def generate_launch_description():
             declare_model_package_arg,
             declare_model_file_arg,
             declare_camera_resolution_arg,
-            declare_rviz_config_template_arg,
             declare_rviz_config_arg,
             declare_lidar_update_rate_arg,
             declare_sensor_preprocessor_config_arg,
@@ -542,7 +473,6 @@ def generate_launch_description():
             declare_use_jsp_arg,
             declare_use_jsp_gui_arg,
             declare_use_rviz_arg,
-            declare_use_rviz_config_template_arg,
             declare_use_sensor_preprocessor_arg,
             declare_use_ros2_control_arg,
             declare_use_navigation_arg,
@@ -556,16 +486,15 @@ def generate_launch_description():
             declare_use_keyboard_arg,
             # Log
             log_info,
-            # Param file generators
-            rviz_config_generator,
             # Nodes
             rsp_node,
             jsp_node,
             jsp_gui_node,
-            rviz_node,
+            # rviz_node,
             # Launchers
-            sensor_preprocessor_launch,
+            rviz_launch,
             gazebo_sim_launch,
+            sensor_preprocessor_launch,
             navigation_launch,
         ]
     )
