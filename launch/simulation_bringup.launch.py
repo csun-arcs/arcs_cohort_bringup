@@ -24,7 +24,6 @@ def generate_launch_description():
     # Package and file paths
     rviz_pkg = "arcs_cohort_rviz"
     gazebo_sim_pkg = "arcs_cohort_gazebo_sim"
-    description_pkg = "arcs_cohort_description"
     sensor_preproc_pkg = "arcs_cohort_sensor_preprocessor"
     nav_pkg = "arcs_cohort_navigation"
 
@@ -38,23 +37,14 @@ def generate_launch_description():
     default_rviz_config_file = os.path.join(
         get_package_share_directory(rviz_pkg), "rviz", "cohort_default.rviz"
     )
-    default_ekf_params_file_template = os.path.join(
-        get_package_share_directory(nav_pkg), "config", "ekf_params.yaml.template"
-    )
     default_ekf_params = os.path.join(
         get_package_share_directory(nav_pkg), "config", "ekf_params.yaml"
-    )
-    default_slam_params_file_template = os.path.join(
-        get_package_share_directory(nav_pkg), "config", "slam_params.yaml.template"
     )
     default_slam_params = os.path.join(
         get_package_share_directory(nav_pkg), "config", "slam_params.yaml"
     )
-    default_nav2_params_file_template = os.path.join(
-        get_package_share_directory(nav_pkg), "config", "nav2_mppi_stamped_params.yaml.template"
-    )
     default_nav2_params = os.path.join(
-        get_package_share_directory(nav_pkg), "config", "nav2_params.yaml"
+        get_package_share_directory(nav_pkg), "config", "nav2_mppi_stamped_params.yaml"
     )
     default_sensor_preprocessor_config_file = os.path.join(
         get_package_share_directory(sensor_preproc_pkg),
@@ -117,25 +107,10 @@ def generate_launch_description():
         default_value=default_sensor_preprocessor_config_file,
         description="Path to sensor preprocessor configuration file",
     )
-    declare_ekf_params_template_arg = DeclareLaunchArgument(
-        "ekf_params_template",
-        default_value=default_ekf_params_file_template,
-        description="Path to the params file template from which to generate the params file for the robot_localization package EKF node.",
-    )
     declare_ekf_params_arg = DeclareLaunchArgument(
         "ekf_params",
         default_value=default_ekf_params,
         description="Path to the params file to load for the robot_localization package EKF node.",
-    )
-    declare_slam_params_template_arg = DeclareLaunchArgument(
-        "slam_params_template",
-        default_value=default_slam_params_file_template,
-        description="Path to the params file template from which to generate the params file for the slam_toolbox package SLAM node.",
-    )
-    declare_nav2_params_template_arg = DeclareLaunchArgument(
-        "nav2_params_template",
-        default_value=default_nav2_params_file_template,
-        description="Path to the params file template from which to generate the params file for the nav2_bringup package Nav2 bringup launcher.",
     )
     declare_slam_params_arg = DeclareLaunchArgument(
         "slam_params",
@@ -204,21 +179,6 @@ def generate_launch_description():
         default_value="true",
         description="Launch nav2_bringup package Nav2 bringup launcher.",
     )
-    declare_use_ekf_params_template_arg = DeclareLaunchArgument(
-        "use_ekf_params_template",
-        default_value="true",
-        description="If true, generate the EKF params from the specified EKF params template.",
-    )
-    declare_use_slam_params_template_arg = DeclareLaunchArgument(
-        "use_slam_params_template",
-        default_value="true",
-        description="If true, generate the SLAM params from the specified SLAM params template.",
-    )
-    declare_use_nav2_params_template_arg = DeclareLaunchArgument(
-        "use_nav2_params_template",
-        default_value="true",
-        description="If true, generate the Nav2 params from the specified Nav2 params template.",
-    )
     declare_use_joystick_arg = DeclareLaunchArgument(
         "use_joystick",
         default_value="false",
@@ -240,11 +200,8 @@ def generate_launch_description():
     rviz_config = LaunchConfiguration("rviz_config")
     sensor_preprocessor_config = LaunchConfiguration("sensor_preprocessor_config")
     lidar_update_rate = LaunchConfiguration("lidar_update_rate")
-    ekf_params_template = LaunchConfiguration("ekf_params_template")
     ekf_params = LaunchConfiguration("ekf_params")
-    slam_params_template = LaunchConfiguration("slam_params_template")
     slam_params = LaunchConfiguration("slam_params")
-    nav2_params_template = LaunchConfiguration("nav2_params_template")
     nav2_params = LaunchConfiguration("nav2_params")
     log_level = LaunchConfiguration("log_level")
     use_sim_time = LaunchConfiguration("use_sim_time")
@@ -259,9 +216,6 @@ def generate_launch_description():
     use_ekf = LaunchConfiguration("use_ekf")
     use_slam = LaunchConfiguration("use_slam")
     use_nav2 = LaunchConfiguration("use_nav2")
-    use_ekf_params_template = LaunchConfiguration("use_ekf_params_template")
-    use_slam_params_template = LaunchConfiguration("use_slam_params_template")
-    use_nav2_params_template = LaunchConfiguration("use_nav2_params_template")
     use_joystick = LaunchConfiguration("use_joystick")
     use_keyboard = LaunchConfiguration("use_keyboard")
 
@@ -431,18 +385,12 @@ def generate_launch_description():
                 "namespace": namespace,
                 "prefix": prefix,
                 "use_sim_time": use_sim_time,
-                "ekf_params_template": ekf_params_template,
                 "ekf_params": ekf_params,
-                "slam_params_template": slam_params_template,
                 "slam_params": slam_params,
-                "nav2_params_template": nav2_params_template,
                 "nav2_params": nav2_params,
                 "use_ekf": use_ekf,
-                "use_ekf_params_template": use_ekf_params_template,
                 "use_slam": use_slam,
-                "use_slam_params_template": use_slam_params_template,
                 "use_nav2": use_nav2,
-                "use_nav2_params_template": use_nav2_params_template,
                 "log_level": log_level,
             }.items()
         )
@@ -459,11 +407,8 @@ def generate_launch_description():
             declare_rviz_config_arg,
             declare_lidar_update_rate_arg,
             declare_sensor_preprocessor_config_arg,
-            declare_ekf_params_template_arg,
             declare_ekf_params_arg,
-            declare_slam_params_template_arg,
             declare_slam_params_arg,
-            declare_nav2_params_template_arg,
             declare_nav2_params_arg,
             declare_log_level_arg,
             declare_use_sim_time_arg,
@@ -478,9 +423,6 @@ def generate_launch_description():
             declare_use_ekf_arg,
             declare_use_slam_arg,
             declare_use_nav2_arg,
-            declare_use_ekf_params_template_arg,
-            declare_use_slam_params_template_arg,
-            declare_use_nav2_params_template_arg,
             declare_use_joystick_arg,
             declare_use_keyboard_arg,
             # Log
