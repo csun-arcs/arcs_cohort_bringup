@@ -17,7 +17,7 @@ from launch.substitutions import (
     PythonExpression,
 )
 from launch_ros.actions import Node, PushRosNamespace
-from launch_ros.substitutions import FindPackageShare
+from nav2_common.launch import ReplaceString
 
 
 def generate_launch_description():
@@ -33,9 +33,14 @@ def generate_launch_description():
         "worlds",
         "test_obstacles_world_1.world",
     )
-    default_model_path = "description/robot.gazebo.xacro"
+    default_model_file = os.path.join(
+        get_package_share_directory(gazebo_sim_pkg), "description", "robot.gazebo.xacro"
+    )
     default_rviz_config_file = os.path.join(
         get_package_share_directory(rviz_pkg), "rviz", "cohort_default.rviz"
+    )
+    default_ros2_control_params_file = os.path.join(
+        get_package_share_directory(gazebo_sim_pkg), "config", "gazebo_ros2_control_params.yaml"
     )
     default_ekf_params = os.path.join(
         get_package_share_directory(nav_pkg), "config", "ekf_params.yaml"
@@ -73,15 +78,10 @@ def generate_launch_description():
         default_value=default_world_path,
         description="Path to the world file to load",
     )
-    declare_model_package_arg = DeclareLaunchArgument(
-        "model_package",
-        default_value=gazebo_sim_pkg,
-        description="Package containing the robot model",
-    )
     declare_model_file_arg = DeclareLaunchArgument(
         "model_file",
-        default_value=default_model_path,
-        description="Relative path to the robot model file",
+        default_value=default_model_file,
+        description="Path to the robot model file",
     )
     declare_camera_resolution_arg = DeclareLaunchArgument(
         "camera_resolution",
@@ -106,6 +106,11 @@ def generate_launch_description():
         "sensor_preprocessor_config",
         default_value=default_sensor_preprocessor_config_file,
         description="Path to sensor preprocessor configuration file",
+    )
+    declare_ros2_control_params_arg = DeclareLaunchArgument(
+        "ros2_control_params",
+        default_value=default_ros2_control_params_file,
+        description="Path to the params file for ros2_control.",
     )
     declare_ekf_params_arg = DeclareLaunchArgument(
         "ekf_params",
@@ -149,10 +154,13 @@ def generate_launch_description():
     declare_use_rviz_arg = DeclareLaunchArgument(
         "use_rviz", default_value="true", description="Launch RViz"
     )
+    declare_use_gazebo_sim_arg = DeclareLaunchArgument(
+        "use_gazebo_sim", default_value="true", description="Launch Gazebo"
+    )
     declare_use_sensor_preprocessor_arg = DeclareLaunchArgument(
         "use_sensor_preprocessor",
         default_value="true",
-        description="If true, launch the sensor preprocessor.",
+        description="Launch the sensor preprocessor pipeline.",
     )
     declare_use_ros2_control_arg = DeclareLaunchArgument(
         "use_ros2_control",
@@ -162,7 +170,7 @@ def generate_launch_description():
     declare_use_navigation_arg = DeclareLaunchArgument(
         "use_navigation",
         default_value="true",
-        description="Bring up navigation stack.",
+        description="Launch the navigation stack.",
     )
     declare_use_ekf_arg = DeclareLaunchArgument(
         "use_ekf",
@@ -194,12 +202,12 @@ def generate_launch_description():
     namespace = LaunchConfiguration("namespace")
     prefix = LaunchConfiguration("prefix")
     world = LaunchConfiguration("world")
-    model_package = LaunchConfiguration("model_package")
     model_file = LaunchConfiguration("model_file")
     camera_resolution = LaunchConfiguration("camera_resolution")
     rviz_config = LaunchConfiguration("rviz_config")
     sensor_preprocessor_config = LaunchConfiguration("sensor_preprocessor_config")
     lidar_update_rate = LaunchConfiguration("lidar_update_rate")
+    ros2_control_params = LaunchConfiguration("ros2_control_params")
     ekf_params = LaunchConfiguration("ekf_params")
     slam_params = LaunchConfiguration("slam_params")
     nav2_params = LaunchConfiguration("nav2_params")
@@ -210,6 +218,7 @@ def generate_launch_description():
     use_jsp = LaunchConfiguration("use_jsp")
     use_jsp_gui = LaunchConfiguration("use_jsp_gui")
     use_rviz = LaunchConfiguration("use_rviz")
+    use_gazebo_sim = LaunchConfiguration("use_gazebo_sim")
     use_sensor_preprocessor = LaunchConfiguration("use_sensor_preprocessor")
     use_ros2_control = LaunchConfiguration("use_ros2_control")
     use_navigation = LaunchConfiguration("use_navigation")
@@ -225,30 +234,67 @@ def generate_launch_description():
     # Use PushRosNamespace to apply the namespace to all nodes below
     push_namespace = PushRosNamespace(namespace=namespace)
 
+    # Build the prefix with underscore.
+    # This expression will evaluate to, for example, "cohort1_" if
+    # the prefix is "cohort1", or to an empty string if prefix is empty.
+    prefix_ = PythonExpression(
+        ["'", prefix, "_' if '", prefix, "' else ''"]
+    )
+
+    # Build the namespace with slash
+    # This expression will evaluate to, for example, "cohort1/" if
+    # the namespace is "cohort1", or to an empty string if namespace is empty.
+    namespace_ = PythonExpression(
+        ["'", namespace, "/' if '", namespace, "' else ''"]
+    )
+
+    # Build the namespace with leading and trailing slashes.
+    # This expression will evaluate to, for example, "/cohort1/" if
+    # the namespace is "cohort1", or to an empty string if namespace is empty.
+    _namespace_ = PythonExpression(
+        ["'/", namespace, "/' if '", namespace, "' else ''"]
+    )
+
+    # Perform substitutions of <NAMESPACE> and <PREFIX> in EKF params file
+    substituted_ros2_control_params = ReplaceString(
+        source_file=ros2_control_params,
+        replacements={
+            '<NAMESPACE>': namespace,
+            '<NAMESPACE_>': namespace_,
+            '<_NAMESPACE_>': _namespace_,
+            '<PREFIX>': prefix,
+            '<PREFIX_>': prefix_,
+        }
+    )
+
     # Robot description from Xacro, including the conditional robot name prefix.
     robot_description = Command(
         [
             "xacro ",
-            PathJoinSubstitution([FindPackageShare(model_package), model_file]),
+            model_file,
             " namespace:=",
             namespace,
             " prefix:=",
             prefix,
-            " use_lidar:=",
-            use_lidar,
-            " lidar_update_rate:=",
-            lidar_update_rate,
             " camera_resolution:=",
             camera_resolution,
+            " lidar_update_rate:=",
+            lidar_update_rate,
+            " ros2_control_params:=",
+            substituted_ros2_control_params,
+            " use_joystick:=",
+            use_joystick,
+            " use_keyboard:=",
+            use_keyboard,
+            " use_lidar:=",
+            use_lidar,
             " use_ros2_control:=",
             use_ros2_control,
         ]
     )
 
     # Robot State Publisher node
-    rsp_node = GroupAction([
-        push_namespace,
-        Node(
+    rsp_node = Node(
             condition=IfCondition(use_rsp),
             package="robot_state_publisher",
             executable="robot_state_publisher",
@@ -261,13 +307,10 @@ def generate_launch_description():
                 ("/tf", "tf"),
                 ("/tf_static", "tf_static"),
             ],
-        )
-    ])
+    )
 
     # Joint State Publisher node
-    jsp_node = GroupAction([
-        push_namespace,
-        Node(
+    jsp_node = Node(
             condition=IfCondition(
                 PythonExpression(
                     ["'", use_jsp, "' == 'true' and '", use_jsp_gui, "' != 'true'"]
@@ -279,13 +322,10 @@ def generate_launch_description():
             parameters=[{"use_sim_time": use_sim_time}],
             output="screen",
             arguments=["--ros-args", "--log-level", log_level],
-        ),
-    ])
+    )
 
     # Joint State Publisher GUI node
-    jsp_gui_node = GroupAction([
-        push_namespace,
-        Node(
+    jsp_gui_node = Node(
             condition=IfCondition(use_jsp_gui),
             package="joint_state_publisher_gui",
             executable="joint_state_publisher_gui",
@@ -293,8 +333,7 @@ def generate_launch_description():
             parameters=[{"use_sim_time": use_sim_time}],
             output="screen",
             arguments=["--ros-args", "--log-level", log_level],
-        ),
-    ])
+    )
 
     # Include rviz.launch.py
     rviz_launch = IncludeLaunchDescription(
@@ -327,25 +366,25 @@ def generate_launch_description():
                 )
             ]
         ),
+        condition=IfCondition(use_gazebo_sim),
         launch_arguments={
             "namespace": namespace,
             "prefix": prefix,
             "world": world,
-            "use_sim_time": use_sim_time,
-            "model_package": model_package,
             "model_file": model_file,
             "camera_resolution": camera_resolution,
             "lidar_update_rate": lidar_update_rate,
+            "ros2_control_params": ros2_control_params,
+            "log_level": log_level,
+            "use_sim_time": use_sim_time,
             "use_lidar": use_lidar,
             "use_rsp": "false",  # Disable RSP in gazebo_sim
             "use_jsp": "false",  # Disable JSP in gazebo_sim
             "use_jsp_gui": "false",  # Disable JSP GUI in gazebo_sim
+            "use_ros2_control": use_ros2_control,
             "use_joystick": use_joystick,
-            "lidar_update_rate": lidar_update_rate,
-            "camera_resolution": camera_resolution,
             "use_keyboard": use_keyboard,
             "use_navigation": use_navigation,
-            "log_level": log_level,
         }.items(),
     )
 
@@ -401,12 +440,12 @@ def generate_launch_description():
             declare_namespace_arg,
             declare_prefix_arg,
             declare_world_arg,
-            declare_model_package_arg,
             declare_model_file_arg,
             declare_camera_resolution_arg,
             declare_rviz_config_arg,
             declare_lidar_update_rate_arg,
             declare_sensor_preprocessor_config_arg,
+            declare_ros2_control_params_arg,
             declare_ekf_params_arg,
             declare_slam_params_arg,
             declare_nav2_params_arg,
@@ -417,6 +456,7 @@ def generate_launch_description():
             declare_use_jsp_arg,
             declare_use_jsp_gui_arg,
             declare_use_rviz_arg,
+            declare_use_gazebo_sim_arg,
             declare_use_sensor_preprocessor_arg,
             declare_use_ros2_control_arg,
             declare_use_navigation_arg,
@@ -428,10 +468,11 @@ def generate_launch_description():
             # Log
             log_info,
             # Nodes
-            rsp_node,
-            jsp_node,
-            jsp_gui_node,
-            # rviz_node,
+            GroupAction([
+                rsp_node,
+                jsp_node,
+                jsp_gui_node,
+            ]),
             # Launchers
             rviz_launch,
             gazebo_sim_launch,
