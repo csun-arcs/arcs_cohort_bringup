@@ -469,6 +469,7 @@ def generate_launch_description():
             log_info,
             # Nodes
             GroupAction([
+                push_namespace,
                 rsp_node,
                 jsp_node,
                 jsp_gui_node,
