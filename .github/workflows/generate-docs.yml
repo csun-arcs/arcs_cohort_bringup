@@ -1,0 +1,56 @@
+# .github/workflows/generate-docs.yml
+name: Generate and Upload Launch Docs to Wiki
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  update-wiki:
+    runs-on: ubuntu-latest
+    container:
+      image: rostooling/setup-ros-docker:ubuntu-noble-latest
+    steps:
+      - name: Checkout source repo
+        uses: actions/checkout@v4
+
+      - name: Set up ROS 2
+        uses: ros-tooling/setup-ros@v0.7
+        with:
+          required-ros-distributions: jazzy
+
+      - name: Install dependencies
+        run: |
+          sudo apt update
+          rosdep update
+          rosdep install --from-paths src --ignore-src -r -y
+
+      - name: Build workspace
+        run: colcon build --event-handlers console_direct+
+
+      - name: Generate launch docs
+        run: |
+          source install/setup.bash
+          python3 scripts/generate_launch_docs.py
+
+      - name: Push to wiki
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config --global user.email "actions@github.com"
+          git config --global user.name "GitHub Actions"
+
+          # Clone wiki repo
+          git clone https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.wiki.git wiki
+
+          # Copy docs
+          rm -rf wiki/launch_args
+          mkdir -p wiki/launch_args
+          cp -r launch_docs/*.md wiki/launch_args/
+
+          # Commit and push
+          cd wiki
+          git add .
+          git commit -m "Auto-update launch argument docs"
+          git push
