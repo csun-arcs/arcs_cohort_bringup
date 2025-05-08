@@ -9,9 +9,10 @@ on:
 jobs:
   update-wiki:
     runs-on: ubuntu-latest
-    container:
-      image: rostooling/setup-ros-docker:ubuntu-noble-latest
     steps:
+      - uses: ros-tooling/setup-ros@v0.7
+        with:
+          required-ros-distributions: jazzy
       - name: Build
         uses: ros-tooling/action-ros-ci@v0.7
         with:
