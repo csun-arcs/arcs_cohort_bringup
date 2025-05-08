@@ -20,6 +20,7 @@ jobs:
         uses: ros-tooling/action-ros-ci@v0.3
         env:
           PYTHONWARNINGS: "ignore:easy_install command is deprecated,ignore:setup.py install is deprecated"
+          SETUPTOOLS_USE_DISTUTILS: stdlib
         with:
           package-name: arcs_cohort_bringup
           target-ros2-distro: jazzy
