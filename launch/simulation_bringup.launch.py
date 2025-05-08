@@ -13,8 +13,8 @@ from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import (
     Command,
     LaunchConfiguration,
-    PathJoinSubstitution,
     PythonExpression,
+    TextSubstitution,
 )
 from launch_ros.actions import Node, PushRosNamespace
 from nav2_common.launch import ReplaceString
@@ -42,6 +42,14 @@ def generate_launch_description():
     default_ros2_control_params_file = os.path.join(
         get_package_share_directory(gazebo_sim_pkg), "config", "gazebo_ros2_control_params.yaml"
     )
+    default_scan_topic = "scan/merged/scan"
+    default_pointcloud_topic = "camera/points/filtered/base"
+    default_local_costmap_plugins = TextSubstitution(
+        text='["static_layer", "obstacle_layer", "voxel_layer", "inflation_layer"]'
+    ),
+    default_global_costmap_plugins = TextSubstitution(
+        text='["static_layer", "obstacle_layer", "stvl_layer", "inflation_layer"]'
+    ),
     default_ekf_params = os.path.join(
         get_package_share_directory(nav_pkg), "config", "ekf_params.yaml"
     )
@@ -111,6 +119,26 @@ def generate_launch_description():
         "ros2_control_params",
         default_value=default_ros2_control_params_file,
         description="Path to the params file for ros2_control.",
+    )
+    declare_scan_topic_arg = DeclareLaunchArgument(
+        "scan_topic",
+        default_value=default_scan_topic,
+        description="Laser scan topic to be used by navigation.",
+    )
+    declare_pointcloud_topic_arg = DeclareLaunchArgument(
+        "pointcloud_topic",
+        default_value=default_pointcloud_topic,
+        description="Point cloud topic to be used by navigation.",
+    )
+    declare_local_costmap_plugins_arg = DeclareLaunchArgument(
+        "local_costmap_plugins",
+        default_value=default_local_costmap_plugins,
+        description="YAML-style list of plugins to use in the local costmap."
+    )
+    declare_global_costmap_plugins_arg = DeclareLaunchArgument(
+        "global_costmap_plugins",
+        default_value=default_global_costmap_plugins,
+        description="YAML-style list of plugins to use in the global costmap."
     )
     declare_ekf_params_arg = DeclareLaunchArgument(
         "ekf_params",
@@ -208,6 +236,10 @@ def generate_launch_description():
     sensor_preprocessor_config = LaunchConfiguration("sensor_preprocessor_config")
     lidar_update_rate = LaunchConfiguration("lidar_update_rate")
     ros2_control_params = LaunchConfiguration("ros2_control_params")
+    scan_topic = LaunchConfiguration("scan_topic")
+    pointcloud_topic = LaunchConfiguration("pointcloud_topic")
+    local_costmap_plugins = LaunchConfiguration("local_costmap_plugins")
+    global_costmap_plugins = LaunchConfiguration("global_costmap_plugins")
     ekf_params = LaunchConfiguration("ekf_params")
     slam_params = LaunchConfiguration("slam_params")
     nav2_params = LaunchConfiguration("nav2_params")
@@ -423,10 +455,14 @@ def generate_launch_description():
             launch_arguments={
                 "namespace": namespace,
                 "prefix": prefix,
-                "use_sim_time": use_sim_time,
+                "scan_topic": scan_topic,
+                "pointcloud_topic": pointcloud_topic,
+                "local_costmap_plugins": local_costmap_plugins,
+                "global_costmap_plugins": global_costmap_plugins,
                 "ekf_params": ekf_params,
                 "slam_params": slam_params,
                 "nav2_params": nav2_params,
+                "use_sim_time": use_sim_time,
                 "use_ekf": use_ekf,
                 "use_slam": use_slam,
                 "use_nav2": use_nav2,
@@ -446,6 +482,10 @@ def generate_launch_description():
             declare_lidar_update_rate_arg,
             declare_sensor_preprocessor_config_arg,
             declare_ros2_control_params_arg,
+            declare_scan_topic_arg,
+            declare_pointcloud_topic_arg,
+            declare_local_costmap_plugins_arg,
+            declare_global_costmap_plugins_arg,
             declare_ekf_params_arg,
             declare_slam_params_arg,
             declare_nav2_params_arg,
