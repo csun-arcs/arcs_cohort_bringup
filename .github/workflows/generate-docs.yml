@@ -24,13 +24,16 @@ jobs:
           skip-tests: true
 
       - name: Generate launch docs
+        shell: bash
         run: |
+          PYTHONWARNINGS="ignore:setup.py install is deprecated::setuptools.command.install"; export PYTHONWARNINGS
           source install/setup.bash
           python3 scripts/generate_launch_docs.py
 
       - name: Push to wiki
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
         run: |
           git config --global user.email "actions@github.com"
           git config --global user.name "GitHub Actions"
