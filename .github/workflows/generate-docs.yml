@@ -17,8 +17,8 @@ jobs:
           required-ros-distributions: jazzy
 
       - name: Build
+        uses: ros-tooling/action-ros-ci@v0.3
         with:
-          uses: ros-tooling/action-ros-ci@v0.3
           package-name: arcs_cohort_bringup
           target-ros2-distro: jazzy
           skip-tests: true
