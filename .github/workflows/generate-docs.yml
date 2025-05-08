@@ -9,13 +9,16 @@ on:
 jobs:
   update-wiki:
     runs-on: ubuntu-latest
+    container:
+      image: ubuntu:noble
     steps:
-      - uses: ros-tooling/setup-ros@0.7
+      - uses: ros-tooling/setup-ros@v0.7
         with:
           required-ros-distributions: jazzy
+
       - name: Build
-        uses: ros-tooling/action-ros-ci@v0.7
         with:
+          uses: ros-tooling/action-ros-ci@v0.3
           package-name: arcs_cohort_bringup
           target-ros2-distro: jazzy
           skip-tests: true
