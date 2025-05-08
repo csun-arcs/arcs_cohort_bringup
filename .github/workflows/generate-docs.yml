@@ -19,7 +19,7 @@ jobs:
       - name: Build
         uses: ros-tooling/action-ros-ci@v0.3
         env:
-          PYTHONWARNINGS: "ignore:setup.py install is deprecated::setuptools.command.install"
+          PYTHONWARNINGS: "ignore:easy_install command is deprecated,ignore:setup.py install is deprecated"
         with:
           package-name: arcs_cohort_bringup
           target-ros2-distro: jazzy
