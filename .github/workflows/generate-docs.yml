@@ -39,24 +39,21 @@ jobs:
         run: |
           ls -lah ros_ws/launch_docs || echo "No docs generated"
 
-      - name: Push to wiki
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        shell: bash
+      - name: Move generated docs to wiki directory
         run: |
-          git config --global user.email "actions@github.com"
-          git config --global user.name "GitHub Actions"
-
-          # Clone wiki repo
-          git clone https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.wiki.git wiki
-
-          # Copy docs
-          rm -rf wiki/launch_args
           mkdir -p wiki/launch_args
-          cp -r ros_ws/launch_docs/*.md wiki/launch_args/
+          cp ros_ws/launch_docs/*.md wiki/launch_args/
 
-          # Commit and push
-          cd wiki
-          git add .
-          git commit -m "Auto-update launch argument docs"
-          git push
+      - name: Create wiki launch files page
+        run: |
+          echo "# ${{ github.event.repository.name }} Launch Files" > wiki/Launchers.md
+          echo "" >> wiki/Launchers.md
+          for f in wiki/launch_args/*.md; do
+            fname=$(basename "$f" .md)
+            echo "- [[launch_args/${fname}]]" >> wiki/Launchers.md
+          done
+
+      - name: Publish to GitHub Wiki
+        uses: Andrew-Chen-Wang/github-wiki-action@v4
+        with:
+          path: wiki/
