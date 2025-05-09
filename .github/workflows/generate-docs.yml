@@ -1,10 +1,19 @@
-# .github/workflows/generate-docs.yml
 name: Generate and Upload Launch Docs to Wiki
 
 on:
   push:
     branches:
       - main
+    paths:
+      - wiki/**
+      - .github/workflows/generate-docs.yml
+
+concurrency:
+  group: generate-docs
+  cancel-in-progress: true
+
+permissions:
+  contents: write
 
 jobs:
   update-wiki:
