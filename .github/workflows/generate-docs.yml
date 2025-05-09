@@ -24,10 +24,8 @@ jobs:
           required-ros-distributions: jazzy
 
       - name: Clone and install arcscfg
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          git clone https://x-access-token:${GH_TOKEN}@github.com/csun-arcs/arcscfg.git
+          git clone https://github.com/csun-arcs/arcscfg.git
           pip install ./arcscfg
 
       - name: Install dependencies with arcscfg
