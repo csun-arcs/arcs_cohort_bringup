@@ -22,7 +22,7 @@ jobs:
           PYTHONWARNINGS: "ignore:easy_install command is deprecated,ignore:setup.py install is deprecated"
           # SETUPTOOLS_USE_DISTUTILS: stdlib
         with:
-          package-name: arcs_cohort_bringup
+          package-name: ${{ github.event.repository.name }}
           target-ros2-distro: jazzy
           skip-tests: true
           no-symlink-install: true
@@ -30,8 +30,8 @@ jobs:
       - name: Generate launch docs
         shell: bash
         run: |
-          source install/setup.bash
-          python3 src/scripts/generate_launch_docs.py
+          source ros_ws/install/setup.bash
+          python3 ros_ws/src/${{ github.event.repository.name }}/scripts/generate_launch_docs.py
 
       - name: Push to wiki
         env:
