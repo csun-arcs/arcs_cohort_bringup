@@ -49,7 +49,7 @@ jobs:
           # Copy docs
           rm -rf wiki/launch_args
           mkdir -p wiki/launch_args
-          cp -r launch_docs/*.md wiki/launch_args/
+          cp -r ros_ws/launch_docs/*.md wiki/launch_args/
 
           # Commit and push
           cd wiki
