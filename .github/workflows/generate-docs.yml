@@ -23,6 +23,15 @@ jobs:
         with:
           required-ros-distributions: jazzy
 
+      - name: Clone and install arcscfg
+        run: |
+          git clone https://github.com/csun-arcs/arcscfg.git
+          pip install ./arcscfg
+
+      - name: Install dependencies with arcscfg
+        run: |
+          arcscfg -d install -id -rd jazzy -df cohort_ros2_jazzy_ubuntu_noble.yaml
+
       - name: Build
         uses: ros-tooling/action-ros-ci@v0.3
         env:
