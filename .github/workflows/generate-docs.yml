@@ -31,6 +31,7 @@ jobs:
         shell: bash
         run: |
           source ros_ws/install/setup.bash
+          find ros_ws
           python3 ros_ws/src/${{ github.event.repository.name }}/scripts/generate_launch_docs.py
 
       - name: Push to wiki
