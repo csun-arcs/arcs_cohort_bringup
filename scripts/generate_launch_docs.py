@@ -2,7 +2,7 @@ import subprocess
 from pathlib import Path
 
 SCRIPT_PATH = Path(__file__).resolve()
-SRC_DIR = SCRIPT_PATH.parents[3] / "src"  # e.g., ros_ws/src
+SRC_DIR = SCRIPT_PATH.parents[2] / "src"  # e.g., ros_ws/src
 DOCS_DIR = SCRIPT_PATH.parents[3] / "launch_docs"
 DOCS_DIR.mkdir(parents=True, exist_ok=True)
 
