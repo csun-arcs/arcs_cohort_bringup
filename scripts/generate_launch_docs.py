@@ -2,13 +2,12 @@ import subprocess
 from pathlib import Path
 
 SCRIPT_PATH = Path(__file__).resolve()
-SRC_DIR = SCRIPT_PATH.parents[2] / "src"  # e.g., ros_ws/src
-DOCS_DIR = SCRIPT_PATH.parents[3] / "launch_docs"
+WORKSPACE_DIR = SCRIPT_PATH.parents[4]  # ros_ws
+found_files = list(WORKSPACE_DIR.rglob("launch/*.launch.py"))
+DOCS_DIR = WORKSPACE_DIR / "launch_docs"
 DOCS_DIR.mkdir(parents=True, exist_ok=True)
 
-print(f"[INFO] Searching for launch files in: {SRC_DIR}")
-
-found_files = list(SRC_DIR.rglob("launch/*.launch.py"))
+print(f"[INFO] Searching for launch files in: {WORKSPACE_DIR}")
 
 if not found_files:
     print("[WARN] No launch files found.")
