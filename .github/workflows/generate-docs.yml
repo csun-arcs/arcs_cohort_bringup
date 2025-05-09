@@ -35,6 +35,10 @@ jobs:
           echo "Found script: $GENERATE_LAUNCH_DOCS_SCRIPT"
           python3 "$GENERATE_LAUNCH_DOCS_SCRIPT"
 
+      - name: Debug launch_docs folder
+        run: |
+          ls -lah ros_ws/launch_docs || echo "No docs generated"
+
       - name: Push to wiki
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
