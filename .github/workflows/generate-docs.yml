@@ -38,7 +38,7 @@ jobs:
           PYTHONWARNINGS: "ignore:easy_install command is deprecated,ignore:setup.py install is deprecated"
           # SETUPTOOLS_USE_DISTUTILS: stdlib
         with:
-          package-name: ${{ github.event.repository.name }}
+          package-name: ""
           target-ros2-distro: jazzy
           skip-tests: true
           no-symlink-install: true
