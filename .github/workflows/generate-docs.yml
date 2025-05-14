@@ -70,7 +70,8 @@ jobs:
           set -euo pipefail
           pip install jinja2
           python3 "./ros_ws/src/${{ github.event.repository.name }}/scripts/generate_template_md.py" \
-            --template "wiki/Home.template.md" \
+            --template-dir "wiki" \
+            --template-name "Home.template.md" \
             --output "wiki/Home.md" \
             --launch-docs-dir "ros_ws/launch_docs" \
             --package-name "${{ github.event.repository.name }}"
