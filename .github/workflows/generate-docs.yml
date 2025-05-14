@@ -51,7 +51,7 @@ jobs:
           source ros_ws/install/setup.bash
           GENERATE_LAUNCH_DOCS_SCRIPT=$(find ros_ws/src -type f -name generate_launch_docs.py | head -n1)
           echo "Found script: $GENERATE_LAUNCH_DOCS_SCRIPT"
-          python3 "$GENERATE_LAUNCH_DOCS_SCRIPT"
+          python3 "$GENERATE_LAUNCH_DOCS_SCRIPT" "${GITHUB_WORKSPACE}/ros_ws"
 
       - name: Debug launch_docs folder
         run: |
