@@ -36,12 +36,10 @@ jobs:
         run: |
           arcscfg -d -v debug setup -wc cohort_jazzy.yaml -w ros_ws -t https
 
-      - name: Build workspace
+      - name: Build workspace with arcscfg
         run: |
           source /opt/ros/jazzy/setup.bash
-          cd ros_ws
-          colcon build --event-handlers console_cohesion+
-          cd ..
+          arcscfg -d -v debug build -w ros_ws -u /opt/ros/jazzy -bs no_cuda
 
       - name: Generate launch docs
         shell: bash
