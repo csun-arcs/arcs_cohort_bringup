@@ -43,7 +43,7 @@ jobs:
       - name: Build workspace with arcscfg
         run: |
           source /opt/ros/jazzy/setup.bash
-          arcscfg -d -v debug build -w ros_ws -u /opt/ros/jazzy -bs ./arcscfg/arcscfg/config/scripts/build_cohort_workspace_no_cuda.yaml
+          arcscfg -d -v debug build -w ros_ws -u /opt/ros/jazzy -bs "${GITHUB_WORKSPACE}/arcscfg/arcscfg/config/scripts/build_cohort_workspace_no_cuda.yaml"
 
       - name: Generate launch docs
         shell: bash
