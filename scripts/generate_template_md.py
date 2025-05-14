@@ -1,44 +1,37 @@
-import os
+#!/usr/bin/env python3
+
 import argparse
 from pathlib import Path
 from jinja2 import Environment, FileSystemLoader
 
-def find_launch_docs_for_package(launch_docs_dir: Path, package_name: str):
-    """Only include .md files that correspond to launch files in this package."""
-    matching_docs = []
-    for md_file in launch_docs_dir.glob("*.md"):
-        if md_file.name.startswith(package_name) or package_name in md_file.read_text():
-            matching_docs.append({
-                "name": md_file.name,
-                "title": md_file.stem.replace("_", " ").title()
-            })
-    return sorted(matching_docs, key=lambda f: f["name"])
+def parse_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--template-dir", type=Path, required=True)
+    parser.add_argument("--template-name", type=str, required=True)
+    parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--launch-docs-dir", type=Path, required=True)
+    parser.add_argument("--package-name", type=str, required=True)
+    return parser.parse_args()
 
 def main():
-    parser = argparse.ArgumentParser(description="Render a markdown template with launch docs.")
-    parser.add_argument("--template", required=True, help="Path to the .jinja.md template file")
-    parser.add_argument("--output", required=True, help="Path to the rendered output markdown file")
-    parser.add_argument("--launch-docs-dir", required=True, help="Directory containing generated .md files for launch files")
-    parser.add_argument("--package-name", required=True, help="Name of the package to filter launch docs by")
-    args = parser.parse_args()
+    args = parse_args()
+    env = Environment(loader=FileSystemLoader(str(args.template_dir)))
+    template = env.get_template(args.template_name)
 
-    template_path = Path(args.template).resolve()
-    output_path = Path(args.output).resolve()
-    launch_docs_dir = Path(args.launch_docs_dir).resolve()
-    package_name = args.package_name
+    docs_dir = args.launch_docs_dir.resolve()
+    package_docs = {
+        doc.stem: doc.read_text()
+        for doc in docs_dir.glob("*.md")
+        if doc.name.startswith(args.package_name)
+    }
 
-    env = Environment(loader=FileSystemLoader(str(template_path.parent)))
-    template = env.get_template(template_path.name)
-
-    launch_docs = find_launch_docs_for_package(launch_docs_dir, package_name)
-
-    rendered = template.render(
-        repo_name=package_name,
-        launch_docs=launch_docs
+    output = template.render(
+        package_name=args.package_name,
+        launch_docs_section="\n\n".join(package_docs.values())
     )
 
-    output_path.write_text(rendered)
-    print(f"[INFO] Rendered template written to: {output_path}")
+    args.output.write_text(output)
+    print(f"[INFO] Rendered template written to: {args.output}")
 
 if __name__ == "__main__":
     main()
