@@ -59,6 +59,10 @@ jobs:
           echo "[INFO] Launch docs generated:"
           ls -lah ros_ws/launch_docs || echo "No docs found"
 
+      - name: Clone GitHub Wiki
+        run: |
+          git clone "https://github.com/${{ github.repository }}.wiki.git" wiki
+
       - name: Move generated docs to wiki directory
         run: |
           set -euo pipefail
