@@ -1,43 +1,65 @@
+#!/usr/bin/env python3
+
+import argparse
 import subprocess
 from pathlib import Path
+import sys
 
-# Locate the script and workspace root
-SCRIPT_PATH = Path(__file__).resolve()
-WORKSPACE_DIR = SCRIPT_PATH.parents[4]  # ros_ws
-DOCS_DIR = WORKSPACE_DIR / "launch_docs"
-DOCS_DIR.mkdir(parents=True, exist_ok=True)
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description="Generate Markdown documentation from ROS 2 launch files."
+    )
+    parser.add_argument(
+        "--workspace",
+        type=Path,
+        required=True,
+        help="Path to the root of the ROS 2 workspace (e.g., ros_ws)."
+    )
+    parser.add_argument(
+        "--output",
+        type=Path,
+        d
+        help="Optional output directory for generated docs. Defaults to <workspace>/launch_docs."
+    )
+    return parser.parse_args()
 
-print(f"[INFO] Script path: {SCRIPT_PATH}")
-print(f"[INFO] Workspace root: {WORKSPACE_DIR}")
-print(f"[INFO] Docs output directory: {DOCS_DIR}")
+def main():
+    args = parse_args()
+    workspace_dir = args.workspace.resolve()
+    docs_dir = args.output.resolve() if args.output else workspace_dir / "launch_docs"
+    docs_dir.mkdir(parents=True, exist_ok=True)
 
-# Recursively find all *.launch.py files under any launch/ directory
-found_files = list(WORKSPACE_DIR.rglob("launch/*.launch.py"))
+    print(f"[INFO] Workspace root: {workspace_dir}")
+    print(f"[INFO] Docs output directory: {docs_dir}")
 
-if not found_files:
-    print("[WARN] No launch files found.")
-else:
-    print(f"[INFO] Found {len(found_files)} launch file(s):")
-    for lf in found_files:
-        print(f" - {lf}")
+    # Find all launch/*.launch.py files recursively
+    launch_files = list(workspace_dir.rglob("launch/*.launch.py"))
+    if not launch_files:
+        print("[WARN] No launch files found.")
+    else:
+        print(f"[INFO] Found {len(launch_files)} launch file(s):")
+        for lf in launch_files:
+            print(f" - {lf}")
 
-# Run ros2 launch --show-args on each file and dump to Markdown
-for launch_file in found_files:
-    try:
-        result = subprocess.run(
-            ["ros2", "launch", str(launch_file), "--show-args"],
-            capture_output=True, text=True, check=True
-        )
-        output = result.stdout.strip()
-    except subprocess.CalledProcessError as e:
-        output = f"[ERROR] Failed to show args for `{launch_file}`:\n{e.stderr}"
+    for launch_file in launch_files:
+        try:
+            result = subprocess.run(
+                ["ros2", "launch", str(launch_file), "--show-args"],
+                capture_output=True, text=True, check=True
+            )
+            output = result.stdout.strip()
+        except subprocess.CalledProcessError as e:
+            output = f"[ERROR] Failed to show args for `{launch_file}`:\n{e.stderr}"
 
-    doc_path = DOCS_DIR / f"{launch_file.stem}.md"
-    with open(doc_path, "w") as f:
-        f.write(f"# `{launch_file.name}`\n\n")
-        f.write(f"**Path**: `{launch_file.relative_to(WORKSPACE_DIR)}`\n\n")
-        f.write("```\n")
-        f.write(output)
-        f.write("\n```")
+        doc_path = docs_dir / f"{launch_file.stem}.md"
+        with open(doc_path, "w") as f:
+            f.write(f"# `{launch_file.name}`\n\n")
+            f.write(f"**Path**: `{launch_file.relative_to(workspace_dir)}`\n\n")
+            f.write("```\n")
+            f.write(output)
+            f.write("\n```")
 
-print(f"[INFO] Documentation generated in: {DOCS_DIR}")
+    print(f"[INFO] Documentation generated in: {docs_dir}")
+
+if __name__ == "__main__":
+    main()
