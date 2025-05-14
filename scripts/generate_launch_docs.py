@@ -64,11 +64,13 @@ def main():
 
         doc_path = docs_dir / f"{launch_file.stem}.md"
         with open(doc_path, "w") as f:
+            # This comment allows filtering later by generate_template_md.py
+            f.write(f"<!-- package: {args.package_name} -->\n\n")
             f.write(f"# `{launch_file.name}`\n\n")
             f.write(f"**Path**: `{launch_file.relative_to(workspace_dir)}`\n\n")
             f.write("```\n")
             f.write(output)
-            f.write("\n```")
+            f.write("\n```\n")
 
     print(f"[INFO] Documentation generated in: {docs_dir}")
 
