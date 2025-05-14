@@ -26,7 +26,7 @@ jobs:
       - name: Clone and install arcscfg
         run: |
           git clone https://github.com/csun-arcs/arcscfg.git
-          pip install ./arcscfg
+          pip install -e ./arcscfg
 
       - name: Install dependencies with arcscfg
         run: |
@@ -43,7 +43,7 @@ jobs:
       - name: Build workspace with arcscfg
         run: |
           source /opt/ros/jazzy/setup.bash
-          arcscfg -d -v debug build -w ros_ws -u /opt/ros/jazzy -bs "${GITHUB_WORKSPACE}/arcscfg/arcscfg/config/scripts/build_cohort_workspace_no_cuda.yaml"
+          arcscfg -d -v debug build -w ros_ws -u /opt/ros/jazzy -bs no_cuda
 
       - name: Generate launch docs
         shell: bash
