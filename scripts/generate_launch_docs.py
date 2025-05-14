@@ -18,7 +18,7 @@ def parse_args():
     parser.add_argument(
         "--output",
         type=Path,
-        d
+        default=None,
         help="Optional output directory for generated docs. Defaults to <workspace>/launch_docs."
     )
     return parser.parse_args()
