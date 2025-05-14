@@ -48,8 +48,8 @@ jobs:
       - name: Generate launch docs
         shell: bash
         run: |
-          set -euo pipefail
           source ros_ws/install/setup.bash
+          set -euo pipefail
           python3 "./ros_ws/src/${{ github.event.repository.name }}/scripts/generate_launch_docs.py" \
             --workspace "${GITHUB_WORKSPACE}/ros_ws" \
             --package-name "${{ github.event.repository.name }}"
