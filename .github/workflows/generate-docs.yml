@@ -30,7 +30,11 @@ jobs:
 
       - name: Install dependencies with arcscfg
         run: |
-          arcscfg -d install -id -rd jazzy -df cohort_ros2_jazzy_ubuntu_noble.yaml
+          arcscfg -d -v debug install -id -rd jazzy -df cohort_ros2_jazzy_ubuntu_noble.yaml
+
+      - name: Setup workspace with arcscfg
+        run: |
+          arcscfg -d -v debug setup -wc cohort_jazzy.yaml -w ros_ws -t https
 
       - name: Build
         uses: ros-tooling/action-ros-ci@v0.3
