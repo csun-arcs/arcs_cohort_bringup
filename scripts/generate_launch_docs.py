@@ -21,6 +21,12 @@ def parse_args():
         default=None,
         help="Optional output directory for generated docs. Defaults to <workspace>/launch_docs."
     )
+    parser.add_argument(
+        "--package-name",
+        type=str,
+        required=True,
+        help="Name of the package to filter launch files from."
+    )
     return parser.parse_args()
 
 def main():
@@ -31,9 +37,14 @@ def main():
 
     print(f"[INFO] Workspace root: {workspace_dir}")
     print(f"[INFO] Docs output directory: {docs_dir}")
+    print(f"[INFO] Targeting package: {args.package_name}")
 
-    # Find all launch/*.launch.py files recursively
-    launch_files = list(workspace_dir.rglob("launch/*.launch.py"))
+    package_src = workspace_dir / "src" / args.package_name
+    if not package_src.exists():
+        print(f"[ERROR] Package directory not found: {package_src}")
+        sys.exit(1)
+
+    launch_files = list(package_src.rglob("launch/*.launch.py"))
     if not launch_files:
         print("[WARN] No launch files found.")
     else:
