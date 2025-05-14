@@ -42,10 +42,17 @@ jobs:
           PYTHONWARNINGS: "ignore:easy_install command is deprecated,ignore:setup.py install is deprecated"
           # SETUPTOOLS_USE_DISTUTILS: stdlib
         with:
+          build-for-testing: true
           package-name: ""
           target-ros2-distro: jazzy
           skip-tests: true
           no-symlink-install: true
+          colcon-defaults: |
+            {
+              "build": {
+                "base-paths": ["ros_ws/src"]
+              }
+            }
 
       - name: Generate launch docs
         shell: bash
