@@ -48,28 +48,30 @@ jobs:
       - name: Generate launch docs
         shell: bash
         run: |
-          source ros_ws/install/setup.bash
-          GENERATE_LAUNCH_DOCS_SCRIPT=$(find ros_ws/src -type f -name generate_launch_docs.py | head -n1)
-          echo "Found script: $GENERATE_LAUNCH_DOCS_SCRIPT"
-          python3 "$GENERATE_LAUNCH_DOCS_SCRIPT" --workspace "${GITHUB_WORKSPACE}/ros_ws"
+          set -euo pipefail
+          python3 "./ros_ws/src/${{ github.event.repository.name }}/scripts/generate_launch_docs.py" \
+            --workspace "${GITHUB_WORKSPACE}/ros_ws" \
+            --package-name "${{ github.event.repository.name }}"
 
       - name: Debug launch_docs folder
         run: |
-          ls -lah ros_ws/launch_docs || echo "No docs generated"
+          echo "[INFO] Launch docs generated:"
+          ls -lah ros_ws/launch_docs || echo "No docs found"
 
       - name: Move generated docs to wiki directory
         run: |
+          set -euo pipefail
           mkdir -p wiki/launch_args
-          cp ros_ws/launch_docs/*.md wiki/launch_args/
+          cp ./ros_ws/launch_docs/*.md wiki/launch_args/
 
-      - name: Create wiki launch files page
+      - name: Render Home.md from template
         run: |
-          echo "# ${{ github.event.repository.name }} Launch Files" > wiki/Launchers.md
-          echo "" >> wiki/Launchers.md
-          for f in wiki/launch_args/*.md; do
-            fname=$(basename "$f" .md)
-            echo "- [[launch_args/${fname}]]" >> wiki/Launchers.md
-          done
+          set -euo pipefail
+          python3 "./ros_ws/src/${{ github.event.repository.name }}/scripts/generate_template_md.py" \
+            --template "wiki/Home.jinja.md" \
+            --output "wiki/Home.md" \
+            --launch-docs-dir "ros_ws/launch_docs" \
+            --package-name "${{ github.event.repository.name }}"
 
       - name: Publish to GitHub Wiki
         uses: Andrew-Chen-Wang/github-wiki-action@v4
