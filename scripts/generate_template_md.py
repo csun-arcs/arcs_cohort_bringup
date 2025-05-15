@@ -7,6 +7,21 @@ from jinja2 import Environment, FileSystemLoader
 
 import xml.etree.ElementTree as ET
 
+import subprocess
+
+def get_remote_branches(repo_dir: Path) -> list[str]:
+    try:
+        result = subprocess.run(
+            ["git", "ls-remote", "--heads", "origin"],
+            cwd=repo_dir,
+            capture_output=True, text=True, check=True
+        )
+        lines = result.stdout.splitlines()
+        return [line.split("refs/heads/")[1] for line in lines if "refs/heads/" in line]
+    except Exception as e:
+        print(f"[WARN] Could not retrieve branch list: {e}")
+        return []
+
 def extract_package_metadata(package_dir: Path):
     pkg_xml = package_dir / "package.xml"
     description, license = None, None
@@ -72,6 +87,12 @@ def parse_args():
         help="Name of the package to filter launch docs for.",
     )
     parser.add_argument(
+        "--github-user",
+        type=str,
+        default="csun-arcs",
+        help="Name of the GitHub user for forming GitHub URLs in templates.",
+    )
+    parser.add_argument(
         "--dry-run",
         action="store_true",
         help="If set, renders the output to stdout instead of writing to a file.",
@@ -106,9 +127,12 @@ def main():
 
     package_dir = Path(args.workspace) / "src" / args.package_name
     description, license, maintainers = extract_package_metadata(package_dir)
+    available_branches = get_remote_branches(package_dir)
 
     context = {
         "repo_name": args.package_name,
+        "github_user": args.github_user,
+        "branches": available_branches,
         "launch_docs": launch_docs,
         "description": description,
         "license": license,
