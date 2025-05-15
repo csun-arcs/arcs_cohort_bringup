@@ -4,12 +4,6 @@ on:
   push:
     branches:
       - main
-    paths:
-      - wiki/**
-      - .github/workflows/generate-docs.yml
-    # Prevent triggering again on commit to README.md
-    paths-ignore:
-      - 'ros_ws/src/**/README.md'
 
 concurrency:
   group: generate-docs
@@ -20,6 +14,9 @@ permissions:
 
 jobs:
   update-wiki:
+    if: |
+      github.event.head_commit.message != 'Update auto-generated README.md' &&
+      !contains(join(github.event.commits.*.modified, ','), 'README.md')
     runs-on: ubuntu-latest
     steps:
       - uses: ros-tooling/setup-ros@v0.7
