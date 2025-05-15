@@ -68,7 +68,7 @@ jobs:
           mkdir -p wiki/launch_args
           cp ./ros_ws/launch_docs/${{ github.event.repository.name }}/*.md wiki/launch_args/
 
-      - name: Render Home.md from template
+      - name: Generate Home.md from template
         run: |
           set -euo pipefail
           pip install jinja2
@@ -77,6 +77,7 @@ jobs:
             --template-name "Home.template.md" \
             --output "wiki/Home.md" \
             --launch-docs-dir "ros_ws/launch_docs" \
+            --workspace "./ros_ws" \
             --package-name "${{ github.event.repository.name }}"
 
       - name: Publish to GitHub Wiki
