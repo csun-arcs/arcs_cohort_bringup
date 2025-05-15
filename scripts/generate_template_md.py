@@ -5,6 +5,31 @@ from pathlib import Path
 
 from jinja2 import Environment, FileSystemLoader
 
+import xml.etree.ElementTree as ET
+
+def extract_package_metadata(package_dir: Path):
+    pkg_xml = package_dir / "package.xml"
+    description, license = None, None
+    maintainers = []
+    if pkg_xml.exists():
+        try:
+            tree = ET.parse(pkg_xml)
+            root = tree.getroot()
+            # Extract description
+            desc_el = root.find("description")
+            description = desc_el.text.strip() if desc_el is not None else None
+            # Extract license
+            lic_el = root.find("license")
+            license = lic_el.text.strip() if lic_el is not None else None
+            # Extract all maintainers
+            for maint_el in root.findall("maintainer"):
+                name = maint_el.text.strip()
+                email = maint_el.attrib.get("email", "")
+                obfuscated_email = email.replace("@", " [at] ").replace(".", " [dot] ") if email else ""
+                maintainers.append({"name": name, "email": email, "obfuscated_email": obfuscated_email})
+        except Exception as e:
+            print(f"[WARN] Failed to parse package.xml: {e}")
+    return description, license, maintainers
 
 def parse_args():
     parser = argparse.ArgumentParser(
@@ -33,6 +58,12 @@ def parse_args():
         type=Path,
         required=True,
         help="Base directory containing per-package .md launch files.",
+    )
+    parser.add_argument(
+        "--workspace",
+        type=str,
+        required=True,
+        help="Name of the ROS workspace to use.",
     )
     parser.add_argument(
         "--package-name",
@@ -73,9 +104,15 @@ def main():
             f"[INFO] Found {len(launch_docs)} launch docs for package: {args.package_name}"
         )
 
+    package_dir = Path(args.workspace) / "src" / args.package_name
+    description, license, maintainers = extract_package_metadata(package_dir)
+
     context = {
         "repo_name": args.package_name,
         "launch_docs": launch_docs,
+        "description": description,
+        "license": license,
+        "maintainers": maintainers,
     }
 
     rendered = template.render(**context)
