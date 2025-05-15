@@ -6,7 +6,7 @@
 This is the `{{ repo_name }}` ROS 2 package, part of the [CoHORT](https://github.com/{{ github_user }}/arcs_cohort) multi-rover autonomy software stack.
 
 {% if description %}
-## Description
+## 📝 Description
 
 {{ description }}
 {% endif %}
@@ -25,12 +25,12 @@ This is the `{{ repo_name }}` ROS 2 package, part of the [CoHORT](https://github
 | `humble` | ![Docs](https://github.com/{{ repo_name }}/actions/workflows/generate-docs.yml/badge.svg?branch=humble) | ![Tests](https://github.com/{{ repo_name }}/actions/workflows/run-tests.yml/badge.svg?branch=humble) |
 {% endif %}
 
-## Documentation
+## 📚 Documentation
 
 👉 For full documentation and launch file reference, visit the [Wiki](https://github.com/{{ github_user }}/{{ repo_name }}/wiki)
 
 {% if launch_docs %}
-## Available Launch Files
+## 🚀 Launch Files
 
 The following launch files are provided by this package:
 
@@ -42,21 +42,21 @@ _This package does not contain any launch files._
 {% endif %}
 
 {% if maintainers %}
-## Maintainers
+## 👥 Maintainers
 
 {% for maint in maintainers %}
 - {{ maint.name }}{% if maint.obfuscated_email %} ({{ maint.obfuscated_email }}){% endif %}
 {% endfor %}
 {% endif %}
 
-## Repository
+## 🗃️ Repository
 
 - 📁 GitHub: [{{ github_user }}/{{ repo_name }}](https://github.com/{{ github_user }}/{{ repo_name }})
 - 📚 Wiki: [Documentation](https://github.com/{{ github_user }}/{{ repo_name }}/wiki)
 - 👥 Contributors: [See contributors](https://github.com/{{ github_user }}/{{ repo_name }}/graphs/contributors)
 
 {% if license %}
-## License
+## 📄 License
 
 This package is licensed under the **{{ license }}** license.
 {% endif %}

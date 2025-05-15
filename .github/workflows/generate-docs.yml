@@ -101,47 +101,23 @@ jobs:
             --workspace "./ros_ws" \
             --package-name "${{ github.event.repository.name }}"
 
-      - name: Clone repo with token
-        run: |
-          git clone "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" repo_clone
-          cp -f ./ros_ws/src/${{ github.event.repository.name }}/README.md repo_clone/README.md
-
-      - name: Create README update PR
+      - name: Clone repo with token and force-push README to autogen branch
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
+          git clone "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" repo_clone
+          cp -f ./ros_ws/src/${{ github.event.repository.name }}/README.md repo_clone/README.md
+
           cd repo_clone
-
-          BRANCH_NAME="autogen/readme-$(date +%Y%m%d-%H%M%S)"
-          git checkout -b "$BRANCH_NAME"
-
+          git checkout -B autogen/readme
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-
           git add README.md
           git diff --cached --quiet && echo "No changes to commit." && exit 0
 
           git commit -m "Update auto-generated README.md"
-          git push origin "$BRANCH_NAME"
+          git push -f origin autogen/readme
 
-          gh pr create \
-            --title "Update auto-generated README.md" \
-            --body "This PR updates the auto-generated \`README.md\` file." \
-            --head "$BRANCH_NAME" \
-            --base "main"
-
-      - name: Merge README update PR
-        if: success()
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          set -euo pipefail
-          cd repo_clone
-
-          # Find the PR number created by this branch
-          BRANCH_NAME=$(git branch --show-current)
-          PR_NUMBER=$(gh pr list --head "$BRANCH_NAME" --json number --jq '.[0].number')
-
-          # Merge it
-          gh pr merge "$PR_NUMBER" --merge --delete-branch --admin
+          echo "✅ Auto-generated README pushed to autogen/readme"
+          echo "🔁 Compare changes at: https://github.com/${{ github.repository }}/compare/main...autogen/readme"
