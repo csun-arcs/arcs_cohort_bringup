@@ -19,6 +19,9 @@ jobs:
       !contains(join(github.event.commits.*.modified, ','), 'README.md')
     runs-on: ubuntu-latest
     steps:
+      - name: Install GitHub CLI
+        run: sudo apt-get install gh -y
+
       - uses: ros-tooling/setup-ros@v0.7
         with:
           required-ros-distributions: jazzy
@@ -102,11 +105,42 @@ jobs:
           git clone "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" repo_clone
           cp -f ./ros_ws/src/${{ github.event.repository.name }}/README.md repo_clone/README.md
 
-      - name: Commit updated README
+      - name: Create README update PR
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          set -euo pipefail
           cd repo_clone
+
+          BRANCH_NAME="autogen/readme-$(date +%Y%m%d-%H%M%S)"
+          git checkout -b "$BRANCH_NAME"
+
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+
           git add README.md
-          git diff --cached --quiet || git commit -m "Update auto-generated README.md"
-          git push
+          git diff --cached --quiet && echo "No changes to commit." && exit 0
+
+          git commit -m "Update auto-generated README.md"
+          git push origin "$BRANCH_NAME"
+
+          gh pr create \
+            --title "Update auto-generated README.md" \
+            --body "This PR updates the auto-generated \`README.md\` file." \
+            --head "$BRANCH_NAME" \
+            --base "main"
+
+      - name: Merge README update PR
+        if: success()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          cd repo_clone
+
+          # Find the PR number created by this branch
+          BRANCH_NAME=$(git branch --show-current)
+          PR_NUMBER=$(gh pr list --head "$BRANCH_NAME" --json number --jq '.[0].number')
+
+          # Merge it
+          gh pr merge "$PR_NUMBER" --merge --delete-branch --admin
