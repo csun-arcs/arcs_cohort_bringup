@@ -1,4 +1,4 @@
-name: Generate and Upload Launch Docs to Wiki
+name: Generate and Upload Wiki and README Documentation
 
 on:
   push:
@@ -7,6 +7,9 @@ on:
     paths:
       - wiki/**
       - .github/workflows/generate-docs.yml
+    # Prevent triggering again on commit to README.md
+    paths-ignore:
+      - 'ros_ws/src/**/README.md'
 
 concurrency:
   group: generate-docs
@@ -84,3 +87,24 @@ jobs:
         uses: Andrew-Chen-Wang/github-wiki-action@v4
         with:
           path: wiki/
+
+      - name: Generate README.md from template
+        run: |
+          set -euo pipefail
+          pip install jinja2
+          python3 "./ros_ws/src/${{ github.event.repository.name }}/scripts/generate_template_md.py" \
+            --template-dir "./ros_ws/src/${{ github.event.repository.name }}/templates/" \
+            --template-name "README.template.md" \
+            --output "./ros_ws/src/${{ github.event.repository.name }}/README.md" \
+            --launch-docs-dir "ros_ws/launch_docs" \
+            --workspace "./ros_ws" \
+            --package-name "${{ github.event.repository.name }}"
+
+      - name: Commit generated README.md
+        run: |
+          cd ros_ws/src/${{ github.event.repository.name }}
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+          git add README.md
+          git diff --cached --quiet || git commit -m "Update auto-generated README.md"
+          git push
