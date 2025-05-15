@@ -2,8 +2,9 @@
 
 import argparse
 import subprocess
-from pathlib import Path
 import sys
+from pathlib import Path
+
 
 def parse_args():
     parser = argparse.ArgumentParser(
@@ -13,31 +14,35 @@ def parse_args():
         "--workspace",
         type=Path,
         required=True,
-        help="Path to the root of the ROS 2 workspace (e.g., ros_ws)."
+        help="Path to the root of the ROS 2 workspace (e.g., ros_ws).",
     )
     parser.add_argument(
         "--output",
         type=Path,
         default=None,
-        help="Optional output directory for generated docs. Defaults to <workspace>/launch_docs."
+        help="Optional output directory for generated docs. Defaults to <workspace>/launch_docs.",
     )
     parser.add_argument(
         "--package-name",
         type=str,
         required=True,
-        help="Name of the package to filter launch files from."
+        help="Name of the package to filter launch files from.",
     )
     parser.add_argument(
         "--dry-run",
         action="store_true",
-        help="Simulate generation without writing files."
+        help="Simulate generation without writing files.",
     )
     return parser.parse_args()
+
 
 def main():
     args = parse_args()
     workspace_dir = args.workspace.resolve()
-    docs_dir = args.output.resolve() if args.output else workspace_dir / "launch_docs"
+    base_docs_dir = (
+        args.output.resolve() if args.output else workspace_dir / "launch_docs"
+    )
+    docs_dir = base_docs_dir / args.package_name
 
     if not args.dry_run:
         docs_dir.mkdir(parents=True, exist_ok=True)
@@ -63,7 +68,9 @@ def main():
         try:
             result = subprocess.run(
                 ["ros2", "launch", str(launch_file), "--show-args"],
-                capture_output=True, text=True, check=True
+                capture_output=True,
+                text=True,
+                check=True,
             )
             output = result.stdout.strip()
         except subprocess.CalledProcessError as e:
@@ -75,14 +82,16 @@ def main():
         else:
             doc_path = docs_dir / filename
             with open(doc_path, "w") as f:
-                f.write(f"<!-- package: {args.package_name} -->\n\n")
                 f.write(f"# `{launch_file.name}`\n\n")
                 f.write(f"**Path**: `{launch_file.relative_to(workspace_dir)}`\n\n")
                 f.write("```\n")
                 f.write(output)
                 f.write("\n```")
 
-    print(f"[INFO] Documentation generation {'simulated' if args.dry_run else 'completed'} in: {docs_dir}")
+    print(
+        f"[INFO] Documentation generation {'simulated' if args.dry_run else 'completed'} in: {docs_dir}"
+    )
+
 
 if __name__ == "__main__":
     main()
