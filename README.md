@@ -15,7 +15,10 @@ A bringup package containing launchers for the ARCS CoHORT project.
 
 | Branch | Docs | Tests |
 |--------|------|-------|
-| `main` | ![Docs](https://github.com/csun-arcs/arcs_cohort_bringup/actions/workflows/generate-docs.yml/badge.svg?branch=main) | ![Tests](https://github.com/csun-arcs/arcs_cohort_bringup/actions/workflows/run-tests.yml/badge.svg?branch=main) |
+| `main` | ![Docs](https://github.com/csun-arcs/arcs_cohort_bringup/actions/workflows/generate-docs.yml.svg?branch=main) | ![Tests](https://github.com/csun-arcs/arcs_cohort_bringup/actions/workflows/run-tests.yml.svg?branch=main) |
+
+
+
 
 
 
