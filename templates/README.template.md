@@ -15,15 +15,9 @@ This is the `{{ repo_name }}` ROS 2 package, part of the [CoHORT](https://github
 
 | Branch | Docs | Tests |
 |--------|------|-------|
-{% if 'main' in branches %}
-| `main` | ![Docs](https://github.com/{{ repo_name }}/actions/workflows/generate-docs.yml/badge.svg?branch=main) | ![Tests](https://github.com/{{ repo_name }}/actions/workflows/run-tests.yml/badge.svg?branch=main) |
-{% endif %}
-{% if 'jazzy' in branches %}
-| `jazzy` | ![Docs](https://github.com/{{ repo_name }}/actions/workflows/generate-docs.yml/badge.svg?branch=jazzy) | ![Tests](https://github.com/{{ repo_name }}/actions/workflows/run-tests.yml/badge.svg?branch=jazzy) |
-{% endif %}
-{% if 'humble' in branches %}
-| `humble` | ![Docs](https://github.com/{{ repo_name }}/actions/workflows/generate-docs.yml/badge.svg?branch=humble) | ![Tests](https://github.com/{{ repo_name }}/actions/workflows/run-tests.yml/badge.svg?branch=humble) |
-{% endif %}
+{% if 'main' in branches %}| `main` | ![Docs](https://github.com/{{ github_user }}/{{ repo_name }}/actions/workflows/generate-docs.yml/badge.svg?branch=main) | ![Tests](https://github.com/{{ github_user }}/{{ repo_name }}/actions/workflows/run-tests.yml/badge.svg?branch=main) |{% endif %}
+{% if 'jazzy' in branches %}| `jazzy` | ![Docs](https://github.com/{{ github_user }}/{{ repo_name }}/actions/workflows/generate-docs.yml/badge.svg?branch=jazzy) | ![Tests](https://github.com/{{ github_user }}/{{ repo_name }}/actions/workflows/run-tests.yml/badge.svg?branch=jazzy) |{% endif %}
+{% if 'humble' in branches %}| `humble` | ![Docs](https://github.com/{{ github_user }}/{{ repo_name }}/actions/workflows/generate-docs.yml/badge.svg?branch=humble) | ![Tests](https://github.com/{{ github_user }}/{{ repo_name }}/actions/workflows/run-tests.yml/badge.svg?branch=humble) |{% endif %}
 
 ## 📚 Documentation
 
@@ -35,7 +29,7 @@ This is the `{{ repo_name }}` ROS 2 package, part of the [CoHORT](https://github
 The following launch files are provided by this package:
 
 {% for file in launch_docs %}
-- `{{ file.title }}` — See [{{ file.name }}](https://github.com/{{ github_user }}/{{ repo_name }}/wiki/{{ file.name }})
+- `{{ file.title }}`: [{{ file.name[:-3] }}](https://github.com/{{ github_user }}/{{ repo_name }}/wiki/{{ file.name[:-3] }})
 {% endfor %}
 {% else %}
 _This package does not contain any launch files._
@@ -58,5 +52,5 @@ _This package does not contain any launch files._
 {% if license %}
 ## 📄 License
 
-This package is licensed under the **{{ license }}** license.
+This package is licensed under the [**{{ license }}** license](https://github.com/{{ github_user }}/{{ repo_name }}/blob/main/LICENSE).
 {% endif %}
