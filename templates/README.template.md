@@ -21,7 +21,7 @@ This is the `{{ repo_name }}` ROS 2 package, part of the [CoHORT](https://github
 
 ## 📚 Documentation
 
-👉 For full documentation and launch file reference, visit the [Wiki](https://github.com/{{ github_user }}/{{ repo_name }}/wiki)
+For full documentation and launch file reference, visit the [Wiki](https://github.com/{{ github_user }}/{{ repo_name }}/wiki)
 
 {% if launch_docs %}
 ## 🚀 Launch Files
