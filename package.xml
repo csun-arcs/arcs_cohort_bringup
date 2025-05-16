@@ -5,6 +5,7 @@
   <version>0.0.0</version>
   <description>A bringup package containing launchers for the ARCS CoHORT project.</description>
   <maintainer email="barry.ridge@csun.edu">Barry Ridge</maintainer>
+  <maintainer email="subhobrata.chakraborty@csun.edu">Subhobrata Chakraborty</maintainer>
   <license>Apache-2.0</license>
 
   <!-- Build dependencies -->
