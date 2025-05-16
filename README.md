@@ -21,7 +21,7 @@ A bringup package containing launchers for the ARCS CoHORT project.
 
 ## 📚 Documentation
 
-👉 For full documentation and launch file reference, visit the [Wiki](https://github.com/csun-arcs/arcs_cohort_bringup/wiki)
+For full documentation and launch file reference, visit the [Wiki](https://github.com/csun-arcs/arcs_cohort_bringup/wiki)
 
 
 ## 🚀 Launch Files
@@ -38,6 +38,8 @@ The following launch files are provided by this package:
 
 
 - Barry Ridge (barry [dot] ridge [at] csun [dot] edu)
+
+- Subhobrata Chakraborty (subhobrata [dot] chakraborty [at] csun [dot] edu)
 
 
 
