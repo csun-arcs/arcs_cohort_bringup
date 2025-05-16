@@ -15,9 +15,7 @@ A bringup package containing launchers for the ARCS CoHORT project.
 
 | Branch | Docs | Tests |
 |--------|------|-------|
-
-| `main` | ![Docs](https://github.com/arcs_cohort_bringup/actions/workflows/generate-docs.yml/badge.svg?branch=main) | ![Tests](https://github.com/arcs_cohort_bringup/actions/workflows/run-tests.yml/badge.svg?branch=main) |
-
+| `main` | ![Docs](https://github.com/csun-arcs/arcs_cohort_bringup/actions/workflows/generate-docs.yml/badge.svg?branch=main) | ![Tests](https://github.com/csun-arcs/arcs_cohort_bringup/actions/workflows/run-tests.yml/badge.svg?branch=main) |
 
 
 
@@ -31,7 +29,7 @@ A bringup package containing launchers for the ARCS CoHORT project.
 The following launch files are provided by this package:
 
 
-- `Simulation Bringup` — See [simulation_bringup.launch.md](https://github.com/csun-arcs/arcs_cohort_bringup/wiki/simulation_bringup.launch.md)
+- `Simulation Bringup`: [simulation_bringup.launch](https://github.com/csun-arcs/arcs_cohort_bringup/wiki/simulation_bringup.launch)
 
 
 
@@ -52,4 +50,4 @@ The following launch files are provided by this package:
 
 ## 📄 License
 
-This package is licensed under the **Apache-2.0** license.
+This package is licensed under the [**Apache-2.0** license](https://github.com/csun-arcs/arcs_cohort_bringup/blob/main/LICENSE).
