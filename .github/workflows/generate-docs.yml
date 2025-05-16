@@ -27,9 +27,13 @@ jobs:
         with:
           required-ros-distributions: jazzy
 
+      - name: Clone arcs_cohort_docs_tools
+        run: |
+          git clone https://github.com/csun-arcs/arcs_cohort_docs_tools.git arcs_cohort_docs_tools
+
       - name: Clone and install arcscfg
         run: |
-          git clone https://github.com/csun-arcs/arcscfg.git
+          git clone https://github.com/csun-arcs/arcscfg.git arcscfg
           pip install -e ./arcscfg
 
       - name: Install dependencies with arcscfg
@@ -54,7 +58,7 @@ jobs:
         run: |
           source ros_ws/install/setup.bash
           set -euo pipefail
-          python3 "./ros_ws/src/${{ github.event.repository.name }}/scripts/generate_launch_docs.py" \
+          python3 "./arcs_cohort_docs_tools/scripts/generate_launch_docs.py" \
             --workspace "${GITHUB_WORKSPACE}/ros_ws" \
             --package-name "${{ github.event.repository.name }}"
 
@@ -76,13 +80,15 @@ jobs:
         run: |
           set -euo pipefail
           pip install jinja2
-          python3 "./ros_ws/src/${{ github.event.repository.name }}/scripts/generate_template_md.py" \
+          python3 "./arcs_cohort_docs_tools/scripts/generate_template_md.py" \
             --template-dir "wiki" \
             --template-name "Home.template.md" \
             --output "wiki/Home.md" \
             --launch-docs-dir "ros_ws/launch_docs" \
             --workspace "./ros_ws" \
             --package-name "${{ github.event.repository.name }}"
+            --docs-workflow-filename "${{ inputs.docs_workflow_filename }}"
+            --tests-workflow-filename "${{ inputs.tests_workflow_filename }}"
 
       - name: Publish to GitHub Wiki
         uses: Andrew-Chen-Wang/github-wiki-action@v4
@@ -93,13 +99,15 @@ jobs:
         run: |
           set -euo pipefail
           pip install jinja2
-          python3 "./ros_ws/src/${{ github.event.repository.name }}/scripts/generate_template_md.py" \
+          python3 "./arcs_cohort_docs_tools/scripts/generate_template_md.py" \
             --template-dir "./ros_ws/src/${{ github.event.repository.name }}/templates/" \
             --template-name "README.template.md" \
             --output "./ros_ws/src/${{ github.event.repository.name }}/README.md" \
             --launch-docs-dir "ros_ws/launch_docs" \
             --workspace "./ros_ws" \
             --package-name "${{ github.event.repository.name }}"
+            --docs-workflow-filename "${{ inputs.docs_workflow_filename }}"
+            --tests-workflow-filename "${{ inputs.tests_workflow_filename }}"
 
       - name: Clone repo with token and force-push README to autogen branch
         env:
