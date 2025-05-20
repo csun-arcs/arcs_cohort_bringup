@@ -11,6 +11,8 @@ setup(
             ['resource/' + package_name]),
         ('share/' + package_name + '/launch', [
             'launch/simulation_bringup.launch.py']),
+        ('share/' + package_name + '/launch', [
+            'launch/multi_rover_sim_bringup.launch.py']),
         ('share/' + package_name, ['package.xml']),
     ],
     install_requires=['setuptools'],
