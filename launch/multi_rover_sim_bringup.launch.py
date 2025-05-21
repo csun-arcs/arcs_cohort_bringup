@@ -152,6 +152,9 @@ def generate_launch_description():
     declare_use_sim_time_arg = DeclareLaunchArgument(
         "use_sim_time", default_value="true", description="Use simulation time"
     )
+    declare_use_clock_bridge_arg = DeclareLaunchArgument(
+        "use_clock_bridge", default_value="true", description="Use Gazebo-to-ROS clock bridge"
+    )
     declare_use_lidar_arg = DeclareLaunchArgument(
         "use_lidar",
         default_value="false",
@@ -223,6 +226,7 @@ def generate_launch_description():
     nav2_params = LaunchConfiguration("nav2_params")
     log_level = LaunchConfiguration("log_level")
     use_sim_time = LaunchConfiguration("use_sim_time")
+    use_clock_bridge = LaunchConfiguration("use_clock_bridge")
     use_lidar = LaunchConfiguration("use_lidar")
     # use_rsp = LaunchConfiguration("use_rsp")
     # use_jsp = LaunchConfiguration("use_jsp")
@@ -256,9 +260,27 @@ def generate_launch_description():
             ]
         ),
         launch_arguments={
+            "use_sim_time": use_sim_time,
             "gz_args": ["-r -v4 ", world],
             "on_exit_shutdown": "true",
         }.items(),
+    )
+
+    start_gazebo_ros_clock_bridge_node = Node(
+        condition=IfCondition(use_clock_bridge),
+        name="clock_bridge",
+        package="ros_gz_bridge",
+        executable="parameter_bridge",
+        arguments=[
+            "/clock@rosgraph_msgs/msg/Clock[gz.msgs.Clock",
+            "--ros-args",
+            "--log-level", log_level,
+        ],
+        output="screen",
+        remappings=[
+            ("/tf", "tf"),
+            ("/tf_static", "tf_static"),
+        ]
     )
 
     ld = [
@@ -281,6 +303,7 @@ def generate_launch_description():
         declare_nav2_params_arg,
         declare_log_level_arg,
         declare_use_sim_time_arg,
+        declare_use_clock_bridge_arg,
         declare_use_lidar_arg,
         # declare_use_rsp_arg,
         # declare_use_jsp_arg,
@@ -299,6 +322,7 @@ def generate_launch_description():
         # log_info,
         # Launchers
         gazebo_launch,
+        start_gazebo_ros_clock_bridge_node,
     ]
 
     for rover in rovers:
@@ -404,6 +428,7 @@ def generate_launch_description():
                 "ros2_control_params": ros2_control_params,
                 "log_level": log_level,
                 "use_sim_time": use_sim_time,
+                "use_clock_bridge": "false",
                 "use_gazebo": "false",
                 "use_spawner": "false",
                 "use_lidar": use_lidar,
@@ -447,6 +472,7 @@ def generate_launch_description():
                 "namespace": ns,
                 "prefix": prefix,
                 "rviz_config": rviz_config,
+                "use_sim_time": use_sim_time,
                 "log_level": log_level,
             }.items(),
         )
@@ -467,6 +493,7 @@ def generate_launch_description():
                 "namespace": ns,
                 "prefix": prefix,
                 "sensor_preprocessor_config": sensor_preprocessor_config,
+                "use_sim_time": use_sim_time,
                 "log_level": log_level,
             }.items(),
         )
