@@ -39,11 +39,17 @@ def generate_launch_description():
     default_rviz_config_file = os.path.join(
         get_package_share_directory(rviz_pkg), "rviz", "cohort_default.rviz"
     )
+    default_sensor_preprocessor_config_file = os.path.join(
+        get_package_share_directory(sensor_preproc_pkg),
+        "config",
+        "sensor_preprocessor.yaml",
+    )
     default_ros2_control_params_file = os.path.join(
         get_package_share_directory(gazebo_sim_pkg), "config", "gazebo_ros2_control_params.yaml"
     )
     default_scan_topic = "scan/merged/scan"
     default_pointcloud_topic = "camera/points/filtered/base"
+    default_odom_topic = "odometry/filtered"
     default_local_costmap_plugins = TextSubstitution(
         text='["static_layer", "obstacle_layer", "voxel_layer", "inflation_layer"]'
     ),
@@ -58,11 +64,6 @@ def generate_launch_description():
     )
     default_nav2_params = os.path.join(
         get_package_share_directory(nav_pkg), "config", "nav2_mppi_stamped_params.yaml"
-    )
-    default_sensor_preprocessor_config_file = os.path.join(
-        get_package_share_directory(sensor_preproc_pkg),
-        "config",
-        "sensor_preprocessor.yaml",
     )
     default_log_level = "INFO"
 
@@ -129,6 +130,11 @@ def generate_launch_description():
         "pointcloud_topic",
         default_value=default_pointcloud_topic,
         description="Point cloud topic to be used by navigation.",
+    )
+    declare_odom_topic_arg = DeclareLaunchArgument(
+        "odom_topic",
+        default_value=default_odom_topic,
+        description="Odometry topic to be used by navigation.",
     )
     declare_local_costmap_plugins_arg = DeclareLaunchArgument(
         "local_costmap_plugins",
@@ -238,6 +244,7 @@ def generate_launch_description():
     ros2_control_params = LaunchConfiguration("ros2_control_params")
     scan_topic = LaunchConfiguration("scan_topic")
     pointcloud_topic = LaunchConfiguration("pointcloud_topic")
+    odom_topic = LaunchConfiguration("odom_topic")
     local_costmap_plugins = LaunchConfiguration("local_costmap_plugins")
     global_costmap_plugins = LaunchConfiguration("global_costmap_plugins")
     ekf_params = LaunchConfiguration("ekf_params")
@@ -457,6 +464,7 @@ def generate_launch_description():
                 "prefix": prefix,
                 "scan_topic": scan_topic,
                 "pointcloud_topic": pointcloud_topic,
+                "odom_topic": odom_topic,
                 "local_costmap_plugins": local_costmap_plugins,
                 "global_costmap_plugins": global_costmap_plugins,
                 "ekf_params": ekf_params,
@@ -484,6 +492,7 @@ def generate_launch_description():
             declare_ros2_control_params_arg,
             declare_scan_topic_arg,
             declare_pointcloud_topic_arg,
+            declare_odom_topic_arg,
             declare_local_costmap_plugins_arg,
             declare_global_costmap_plugins_arg,
             declare_ekf_params_arg,
