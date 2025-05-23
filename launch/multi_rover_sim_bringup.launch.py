@@ -228,9 +228,6 @@ def generate_launch_description():
     use_sim_time = LaunchConfiguration("use_sim_time")
     use_clock_bridge = LaunchConfiguration("use_clock_bridge")
     use_lidar = LaunchConfiguration("use_lidar")
-    # use_rsp = LaunchConfiguration("use_rsp")
-    # use_jsp = LaunchConfiguration("use_jsp")
-    # use_jsp_gui = LaunchConfiguration("use_jsp_gui")
     use_rviz = LaunchConfiguration("use_rviz")
     use_gazebo_sim = LaunchConfiguration("use_gazebo_sim")
     use_sensor_preprocessor = LaunchConfiguration("use_sensor_preprocessor")
@@ -305,9 +302,6 @@ def generate_launch_description():
         declare_use_sim_time_arg,
         declare_use_clock_bridge_arg,
         declare_use_lidar_arg,
-        # declare_use_rsp_arg,
-        # declare_use_jsp_arg,
-        # declare_use_jsp_gui_arg,
         declare_use_rviz_arg,
         declare_use_gazebo_sim_arg,
         declare_use_sensor_preprocessor_arg,
@@ -392,21 +386,6 @@ def generate_launch_description():
             ]
         )
 
-        # robot_state_publisher
-        rsp_node = Node(
-            package='robot_state_publisher',
-            executable='robot_state_publisher',
-            name='robot_state_publisher',
-            output='screen',
-            parameters=[
-                {"robot_description": robot_description, "use_sim_time": use_sim_time}
-            ],
-            remappings=[
-                ("/tf", "tf"),
-                ("/tf_static", "tf_static"),
-            ],
-        )
-
         gazebo_sim_launch = IncludeLaunchDescription(
             PythonLaunchDescriptionSource(
                 [
@@ -432,13 +411,12 @@ def generate_launch_description():
                 "use_gazebo": "false",
                 "use_spawner": "false",
                 "use_lidar": use_lidar,
-                "use_rsp": "false",  # Disable RSP in gazebo_sim
-                "use_jsp": "false",  # Disable JSP in gazebo_sim
-                "use_jsp_gui": "false",  # Disable JSP GUI in gazebo_sim
+                "use_rsp": "false",
+                "use_jsp": "false",
+                "use_jsp_gui": "false",
                 "use_ros2_control": use_ros2_control,
                 "use_joystick": use_joystick,
                 "use_keyboard": use_keyboard,
-                # "use_navigation": use_navigation,
             }.items(),
         )
 
@@ -531,7 +509,6 @@ def generate_launch_description():
         ld.append(
             GroupAction([
                 push_namespace,
-                rsp_node,
                 spawn_entity_node,
             ]))
         ld.append(gazebo_sim_launch)
