@@ -1,0 +1,9 @@
+rovers:
+  - name: cohort1
+    x: 0.0
+    y: 0.0
+    z: 0.1
+  - name: cohort2
+    x: 2.0
+    y: 0.0
+    z: 0.1
