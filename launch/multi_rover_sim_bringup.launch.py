@@ -1,12 +1,17 @@
 import os
+
 import yaml
+from ament_index_python.packages import get_package_share_directory
+from launch_ros.actions import Node, PushRosNamespace
+from nav2_common.launch import ReplaceString
+
 from launch import LaunchDescription
+from launch.actions import OpaqueFunction  # NEW: for deferred execution
 from launch.actions import (
     DeclareLaunchArgument,
+    ExecuteProcess,
     GroupAction,
     IncludeLaunchDescription,
-    ExecuteProcess,
-    OpaqueFunction,          # NEW: for deferred execution
 )
 from launch.conditions import IfCondition
 from launch.launch_description_sources import PythonLaunchDescriptionSource
@@ -16,9 +21,6 @@ from launch.substitutions import (
     PythonExpression,
     TextSubstitution,
 )
-from launch_ros.actions import PushRosNamespace, Node
-from ament_index_python.packages import get_package_share_directory
-from nav2_common.launch import ReplaceString
 
 
 def generate_launch_description():
@@ -83,7 +85,8 @@ def generate_launch_description():
         DeclareLaunchArgument("rviz_config", default_value=default_rviz_config_file),
         DeclareLaunchArgument("rover_config", default_value=default_rover_config_file),
         DeclareLaunchArgument(
-            "sensor_preprocessor_config", default_value=default_sensor_preprocessor_config_file
+            "sensor_preprocessor_config",
+            default_value=default_sensor_preprocessor_config_file,
         ),
         DeclareLaunchArgument(
             "camera_resolution",
@@ -93,11 +96,19 @@ def generate_launch_description():
             ),
         ),
         DeclareLaunchArgument("lidar_update_rate", default_value="10"),
-        DeclareLaunchArgument("ros2_control_params", default_value=default_ros2_control_params_file),
+        DeclareLaunchArgument(
+            "ros2_control_params", default_value=default_ros2_control_params_file
+        ),
         DeclareLaunchArgument("scan_topic", default_value=default_scan_topic),
-        DeclareLaunchArgument("pointcloud_topic", default_value=default_pointcloud_topic),
-        DeclareLaunchArgument("local_costmap_plugins", default_value=default_local_costmap_plugins),
-        DeclareLaunchArgument("global_costmap_plugins", default_value=default_global_costmap_plugins),
+        DeclareLaunchArgument(
+            "pointcloud_topic", default_value=default_pointcloud_topic
+        ),
+        DeclareLaunchArgument(
+            "local_costmap_plugins", default_value=default_local_costmap_plugins
+        ),
+        DeclareLaunchArgument(
+            "global_costmap_plugins", default_value=default_global_costmap_plugins
+        ),
         DeclareLaunchArgument("ekf_params", default_value=default_ekf_params),
         DeclareLaunchArgument("slam_params", default_value=default_slam_params),
         DeclareLaunchArgument("nav2_params", default_value=default_nav2_params),
@@ -120,42 +131,48 @@ def generate_launch_description():
     # ---------------------------------------------------------------------
     # Launch-configs (Substitutions used later)
     # ---------------------------------------------------------------------
-    world                = LaunchConfiguration("world")
-    model_file           = LaunchConfiguration("model_file")
-    camera_resolution    = LaunchConfiguration("camera_resolution")
-    rviz_config          = LaunchConfiguration("rviz_config")
-    rover_config         = LaunchConfiguration("rover_config")
-    sensor_preproc_cfg   = LaunchConfiguration("sensor_preprocessor_config")
-    lidar_update_rate    = LaunchConfiguration("lidar_update_rate")
-    ros2_control_params  = LaunchConfiguration("ros2_control_params")
-    scan_topic           = LaunchConfiguration("scan_topic")
-    pointcloud_topic     = LaunchConfiguration("pointcloud_topic")
-    local_costmap_plugs  = LaunchConfiguration("local_costmap_plugins")
+    world = LaunchConfiguration("world")
+    model_file = LaunchConfiguration("model_file")
+    camera_resolution = LaunchConfiguration("camera_resolution")
+    rviz_config = LaunchConfiguration("rviz_config")
+    rover_config = LaunchConfiguration("rover_config")
+    sensor_preproc_cfg = LaunchConfiguration("sensor_preprocessor_config")
+    lidar_update_rate = LaunchConfiguration("lidar_update_rate")
+    ros2_control_params = LaunchConfiguration("ros2_control_params")
+    scan_topic = LaunchConfiguration("scan_topic")
+    pointcloud_topic = LaunchConfiguration("pointcloud_topic")
+    local_costmap_plugs = LaunchConfiguration("local_costmap_plugins")
     global_costmap_plugs = LaunchConfiguration("global_costmap_plugins")
-    ekf_params           = LaunchConfiguration("ekf_params")
-    slam_params          = LaunchConfiguration("slam_params")
-    nav2_params          = LaunchConfiguration("nav2_params")
-    log_level            = LaunchConfiguration("log_level")
-    use_sim_time         = LaunchConfiguration("use_sim_time")
-    use_clock_bridge     = LaunchConfiguration("use_clock_bridge")
-    use_lidar            = LaunchConfiguration("use_lidar")
-    use_rviz             = LaunchConfiguration("use_rviz")
-    use_gazebo_sim       = LaunchConfiguration("use_gazebo_sim")
-    use_sensor_preproc   = LaunchConfiguration("use_sensor_preprocessor")
-    use_ros2_control     = LaunchConfiguration("use_ros2_control")
-    use_navigation       = LaunchConfiguration("use_navigation")
-    use_ekf              = LaunchConfiguration("use_ekf")
-    use_slam             = LaunchConfiguration("use_slam")
-    use_nav2             = LaunchConfiguration("use_nav2")
-    use_joystick         = LaunchConfiguration("use_joystick")
-    use_keyboard         = LaunchConfiguration("use_keyboard")
+    ekf_params = LaunchConfiguration("ekf_params")
+    slam_params = LaunchConfiguration("slam_params")
+    nav2_params = LaunchConfiguration("nav2_params")
+    log_level = LaunchConfiguration("log_level")
+    use_sim_time = LaunchConfiguration("use_sim_time")
+    use_clock_bridge = LaunchConfiguration("use_clock_bridge")
+    use_lidar = LaunchConfiguration("use_lidar")
+    use_rviz = LaunchConfiguration("use_rviz")
+    use_gazebo_sim = LaunchConfiguration("use_gazebo_sim")
+    use_sensor_preproc = LaunchConfiguration("use_sensor_preprocessor")
+    use_ros2_control = LaunchConfiguration("use_ros2_control")
+    use_navigation = LaunchConfiguration("use_navigation")
+    use_ekf = LaunchConfiguration("use_ekf")
+    use_slam = LaunchConfiguration("use_slam")
+    use_nav2 = LaunchConfiguration("use_nav2")
+    use_joystick = LaunchConfiguration("use_joystick")
+    use_keyboard = LaunchConfiguration("use_keyboard")
 
     # ---------------------------------------------------------------------
     # Gazebo (top-level, independent of rover loop)
     # ---------------------------------------------------------------------
     gazebo_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
-            [os.path.join(get_package_share_directory("ros_gz_sim"), "launch", "gz_sim.launch.py")]
+            [
+                os.path.join(
+                    get_package_share_directory("ros_gz_sim"),
+                    "launch",
+                    "gz_sim.launch.py",
+                )
+            ]
         ),
         launch_arguments={
             "use_sim_time": use_sim_time,
@@ -172,7 +189,8 @@ def generate_launch_description():
         arguments=[
             "/clock@rosgraph_msgs/msg/Clock[gz.msgs.Clock",
             "--ros-args",
-            "--log-level", log_level,
+            "--log-level",
+            log_level,
         ],
         output="screen",
         remappings=[("/tf", "tf"), ("/tf_static", "tf_static")],
@@ -194,11 +212,11 @@ def generate_launch_description():
             prefix = ""
             x, y, z = rover["x"], rover["y"], rover["z"]
 
-            push_ns = PushRosNamespace(namespace=ns)
+            push_namespace = PushRosNamespace(namespace=ns)
 
             prefix_ = PythonExpression(["'", prefix, "_' if '", prefix, "' else ''"])
-            ns_     = PythonExpression(["'", ns, "/' if '", ns, "' else ''"])
-            _ns_    = PythonExpression(["'/", ns, "/' if '", ns, "' else ''"])
+            ns_ = PythonExpression(["'", ns, "/' if '", ns, "' else ''"])
+            _ns_ = PythonExpression(["'/", ns, "/' if '", ns, "' else ''"])
 
             substituted_ros2_ctrl = ReplaceString(
                 source_file=ros2_control_params,
@@ -215,18 +233,48 @@ def generate_launch_description():
                 [
                     "xacro ",
                     model_file,
-                    " namespace:=", ns,
-                    " prefix:=", prefix,
-                    " camera_resolution:=", camera_resolution,
-                    " lidar_update_rate:=", lidar_update_rate,
-                    " ros2_control_params:=", substituted_ros2_ctrl,
-                    " use_joystick:=", use_joystick,
-                    " use_keyboard:=", use_keyboard,
-                    " use_lidar:=", use_lidar,
-                    " use_ros2_control:=", use_ros2_control,
+                    " namespace:=",
+                    ns,
+                    " prefix:=",
+                    prefix,
+                    " camera_resolution:=",
+                    camera_resolution,
+                    " lidar_update_rate:=",
+                    lidar_update_rate,
+                    " ros2_control_params:=",
+                    substituted_ros2_ctrl,
+                    " use_joystick:=",
+                    use_joystick,
+                    " use_keyboard:=",
+                    use_keyboard,
+                    " use_lidar:=",
+                    use_lidar,
+                    " use_ros2_control:=",
+                    use_ros2_control,
                 ]
             )
 
+            # Robot state publisher
+            rsp_node = Node(
+                package="robot_state_publisher",
+                executable="robot_state_publisher",
+                name="robot_state_publisher",
+                output="screen",
+                parameters=[
+                    {
+                        "robot_description": robot_description,
+                        "use_sim_time": use_sim_time,
+                    }
+                ],
+                remappings=[
+                    ("/tf", "tf"),
+                    ("/tf_static", "tf_static"),
+                ],
+            )
+
+            # Use gazebo_sim.launch.py from arcs_cohort_gazebo_sim package to
+            # bring up Gazebo-related nodes, etc. for rover, but without
+            # bringing up an instance of Gazebo itself.
             gazebo_sim_launch = IncludeLaunchDescription(
                 PythonLaunchDescriptionSource(
                     [
@@ -261,19 +309,26 @@ def generate_launch_description():
                 }.items(),
             )
 
-            spawn_entity = Node(
+            # Spawn rover instance into Gazebo sim
+            spawn_entity_node = Node(
                 package="ros_gz_sim",
                 executable="create",
                 arguments=[
-                    "-topic", "robot_description",
-                    "-name", ns,
-                    "-x", str(x),
-                    "-y", str(y),
-                    "-z", str(z),
+                    "-topic",
+                    "robot_description",
+                    "-name",
+                    ns,
+                    "-x",
+                    str(x),
+                    "-y",
+                    str(y),
+                    "-z",
+                    str(z),
                 ],
                 output="screen",
             )
 
+            # Launch rover-specific RViz instance
             rviz_launch = IncludeLaunchDescription(
                 PythonLaunchDescriptionSource(
                     [
@@ -294,6 +349,7 @@ def generate_launch_description():
                 }.items(),
             )
 
+            # Launch rover-specific sensor preprocessor
             sensor_preproc_launch = IncludeLaunchDescription(
                 PythonLaunchDescriptionSource(
                     [
@@ -314,6 +370,7 @@ def generate_launch_description():
                 }.items(),
             )
 
+            # Launch rover-specific navigation
             navigation_launch = IncludeLaunchDescription(
                 PythonLaunchDescriptionSource(
                     [
@@ -343,15 +400,17 @@ def generate_launch_description():
                 }.items(),
             )
 
-            # Group rover-specific actions under its namespace
+            # Group rover-specific nodes under its namespace
             actions.append(
                 GroupAction(
                     [
-                        push_ns,
-                        spawn_entity,
+                        push_namespace,
+                        rsp_node,
+                        spawn_entity_node,
                     ]
                 )
             )
+            # Rover-specific launchers already have namespace as param
             actions.extend(
                 [
                     gazebo_sim_launch,
