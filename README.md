@@ -23,6 +23,7 @@ For full documentation and launch file reference, visit the [Wiki](https://githu
 
 The following launch files are provided by this package:
 
+- `Multi Rover Sim Bringup`: [multi_rover_sim_bringup.launch](https://github.com/csun-arcs/arcs_cohort_bringup/wiki/multi_rover_sim_bringup.launch)
 - `Simulation Bringup`: [simulation_bringup.launch](https://github.com/csun-arcs/arcs_cohort_bringup/wiki/simulation_bringup.launch)
 
 ## 👥 Maintainers
