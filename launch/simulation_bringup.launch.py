@@ -169,6 +169,11 @@ def generate_launch_description():
     declare_use_sim_time_arg = DeclareLaunchArgument(
         "use_sim_time", default_value="true", description="Use simulation time"
     )
+    declare_use_camera_arg = DeclareLaunchArgument(
+        "use_camera",
+        default_value="true",
+        description="If true, include the camera in the robot description.",
+    )
     declare_use_lidar_arg = DeclareLaunchArgument(
         "use_lidar",
         default_value="false",
@@ -252,6 +257,7 @@ def generate_launch_description():
     nav2_params = LaunchConfiguration("nav2_params")
     log_level = LaunchConfiguration("log_level")
     use_sim_time = LaunchConfiguration("use_sim_time")
+    use_camera = LaunchConfiguration("use_camera")
     use_lidar = LaunchConfiguration("use_lidar")
     use_rsp = LaunchConfiguration("use_rsp")
     use_jsp = LaunchConfiguration("use_jsp")
@@ -325,6 +331,8 @@ def generate_launch_description():
             use_joystick,
             " use_keyboard:=",
             use_keyboard,
+            " use_camera:=",
+            use_camera,
             " use_lidar:=",
             use_lidar,
             " use_ros2_control:=",
@@ -416,6 +424,7 @@ def generate_launch_description():
             "ros2_control_params": ros2_control_params,
             "log_level": log_level,
             "use_sim_time": use_sim_time,
+            "use_camera": use_camera,
             "use_lidar": use_lidar,
             "use_rsp": "false",  # Disable RSP in gazebo_sim
             "use_jsp": "false",  # Disable JSP in gazebo_sim
@@ -500,6 +509,7 @@ def generate_launch_description():
             declare_nav2_params_arg,
             declare_log_level_arg,
             declare_use_sim_time_arg,
+            declare_use_camera_arg,
             declare_use_lidar_arg,
             declare_use_rsp_arg,
             declare_use_jsp_arg,
