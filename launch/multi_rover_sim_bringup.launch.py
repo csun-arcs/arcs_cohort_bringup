@@ -115,6 +115,7 @@ def generate_launch_description():
         DeclareLaunchArgument("log_level", default_value=default_log_level),
         DeclareLaunchArgument("use_sim_time", default_value="true"),
         DeclareLaunchArgument("use_clock_bridge", default_value="true"),
+        DeclareLaunchArgument("use_camera", default_value="true"),
         DeclareLaunchArgument("use_lidar", default_value="false"),
         DeclareLaunchArgument("use_rviz", default_value="true"),
         DeclareLaunchArgument("use_gazebo_sim", default_value="true"),
@@ -149,6 +150,7 @@ def generate_launch_description():
     log_level = LaunchConfiguration("log_level")
     use_sim_time = LaunchConfiguration("use_sim_time")
     use_clock_bridge = LaunchConfiguration("use_clock_bridge")
+    use_camera = LaunchConfiguration("use_camera")
     use_lidar = LaunchConfiguration("use_lidar")
     use_rviz = LaunchConfiguration("use_rviz")
     use_gazebo_sim = LaunchConfiguration("use_gazebo_sim")
@@ -247,6 +249,8 @@ def generate_launch_description():
                     use_joystick,
                     " use_keyboard:=",
                     use_keyboard,
+                    " use_camera:=",
+                    use_camera,
                     " use_lidar:=",
                     use_lidar,
                     " use_ros2_control:=",
@@ -299,6 +303,7 @@ def generate_launch_description():
                     "use_clock_bridge": "false",
                     "use_gazebo": "false",
                     "use_spawner": "false",
+                    "use_camera": use_camera,
                     "use_lidar": use_lidar,
                     "use_rsp": "false",
                     "use_jsp": "false",
